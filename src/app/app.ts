@@ -1,16 +1,20 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { Header } from './layouts/header/header';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, Header],
   template: `
-    <h1>Welcome to {{ title() }}!</h1>
-
+    <app-header></app-header>
     <router-outlet />
   `,
-  styleUrl: './app.scss'
+  styles: `
+    :host {
+      display: block;
+      min-height: 100vh;
+      background: var(--mat-sys-surface);
+    }
+  `,
 })
-export class App {
-  protected readonly title = signal('iceplay');
-}
+export class App {}
