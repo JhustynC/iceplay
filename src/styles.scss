@@ -1,1 +1,222 @@
-/* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+
+// ===========================================
+// ANGULAR MATERIAL BASE THEME
+// ===========================================
+html {
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: (
+        plain-family: 'Montserrat',
+        brand-family: 'Montserrat',
+        bold-weight: 600,
+        medium-weight: 500,
+        regular-weight: 400,
+      ),
+      density: 0,
+    )
+  );
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  color-scheme: light;
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+  --mat-sys-body-large-size: 0.875rem;
+
+  @include mat.dialog-overrides(
+    (
+      container-shape: 6px,
+    )
+  );
+}
+
+// ===========================================
+// THEME DEFINITIONS
+// ===========================================
+
+// Light mode - Clean white/gray
+body.theme-light {
+  --mat-sys-surface: #f3f4f6;
+  --mat-sys-surface-container: #ffffff;
+  --mat-sys-surface-container-low: #f9fafb;
+  --mat-sys-surface-container-high: #ffffff;
+  --mat-sys-surface-container-highest: #ffffff;
+  --mat-sys-on-surface: #1f2937;
+  --mat-sys-on-surface-variant: #4b5563;
+  --mat-sys-outline: #9ca3af;
+  --mat-sys-outline-variant: #e5e7eb;
+}
+
+// Dark mode - GitHub style (Neutral Gray)
+body.theme-dark {
+  --mat-sys-surface: #0d1117;
+  --mat-sys-surface-container: #161b22;
+  --mat-sys-surface-container-low: #0d1117;
+  --mat-sys-surface-container-high: #21262d;
+  --mat-sys-surface-container-highest: #30363d;
+  --mat-sys-on-surface: #c9d1d9;
+  --mat-sys-on-surface-variant: #8b949e;
+  --mat-sys-outline: #6e7681;
+  --mat-sys-outline-variant: #30363d;
+}
+
+// Midnight Blue - Deep blue theme
+body.theme-midnight {
+  --mat-sys-surface: #0f172a;
+  --mat-sys-surface-container: #1e293b;
+  --mat-sys-surface-container-low: #0f172a;
+  --mat-sys-surface-container-high: #334155;
+  --mat-sys-surface-container-highest: #475569;
+  --mat-sys-on-surface: #e2e8f0;
+  --mat-sys-on-surface-variant: #94a3b8;
+  --mat-sys-outline: #64748b;
+  --mat-sys-outline-variant: #334155;
+  --mat-sys-primary: #60a5fa;
+  --mat-sys-on-primary: #0f172a;
+}
+
+// Forest - Green/Nature theme
+body.theme-forest {
+  --mat-sys-surface: #0c1a0f;
+  --mat-sys-surface-container: #14261a;
+  --mat-sys-surface-container-low: #0c1a0f;
+  --mat-sys-surface-container-high: #1e3725;
+  --mat-sys-surface-container-highest: #2a4a33;
+  --mat-sys-on-surface: #d1e7d6;
+  --mat-sys-on-surface-variant: #9bc4a5;
+  --mat-sys-outline: #6b9e76;
+  --mat-sys-outline-variant: #1e3725;
+  --mat-sys-primary: #4ade80;
+  --mat-sys-on-primary: #0c1a0f;
+}
+
+// Sunset - Warm orange/amber theme (light)
+body.theme-sunset {
+  --mat-sys-surface: #fffbf0;
+  --mat-sys-surface-container: #fff7e6;
+  --mat-sys-surface-container-low: #fffbf0;
+  --mat-sys-surface-container-high: #ffedd5;
+  --mat-sys-surface-container-highest: #fed7aa;
+  --mat-sys-on-surface: #431407;
+  --mat-sys-on-surface-variant: #78350f;
+  --mat-sys-outline: #d97706;
+  --mat-sys-outline-variant: #fde68a;
+  --mat-sys-primary: #ea580c;
+  --mat-sys-on-primary: #ffffff;
+}
+
+// Ocean - Deep teal/cyan theme
+body.theme-ocean {
+  --mat-sys-surface: #042f2e;
+  --mat-sys-surface-container: #0d3d3b;
+  --mat-sys-surface-container-low: #042f2e;
+  --mat-sys-surface-container-high: #115e59;
+  --mat-sys-surface-container-highest: #0f766e;
+  --mat-sys-on-surface: #ccfbf1;
+  --mat-sys-on-surface-variant: #5eead4;
+  --mat-sys-outline: #14b8a6;
+  --mat-sys-outline-variant: #115e59;
+  --mat-sys-primary: #2dd4bf;
+  --mat-sys-on-primary: #042f2e;
+}
+
+// ===========================================
+// ANGULAR MATERIAL COMPONENT OVERRIDES
+// ===========================================
+
+button[matButton] {
+  @include mat.button-overrides(
+    (
+      filled-container-shape: 6px,
+      outlined-container-shape: 6px,
+      text-container-shape: 6px,
+      tonal-container-shape: 6px,
+      filled-container-height: 36px,
+      outlined-container-height: 36px,
+      text-container-height: 36px,
+      tonal-container-height: 36px,
+    )
+  );
+}
+
+button[matIconButton] {
+  @include mat.icon-button-overrides(
+    (
+      container-shape: 6px,
+    )
+  );
+}
+
+mat-form-field {
+  @include mat.theme(
+    (
+      density: -4,
+    )
+  );
+  width: 100%;
+}
+
+// Fix for Angular Material + TailwindCSS border conflict
+.mdc-notched-outline__notch {
+  border-right: none !important;
+}
+
+// ===========================================
+// UTILITY CLASSES
+// ===========================================
+
+.responsive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 1rem;
+}
+
+.product-card {
+  background-color: var(--mat-sys-surface-container);
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+// Theme-aware text colors (use these instead of hardcoded colors)
+.text-primary {
+  color: var(--mat-sys-on-surface);
+}
+
+.text-secondary {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.text-tertiary {
+  color: var(--mat-sys-outline);
+}
+
+:root {
+  // UI Component Variables
+  --ui-color-primary: #3b82f6;
+  --ui-color-primary-dark: #2563eb;
+  --ui-color-secondary: #e5e7eb;
+  --ui-color-secondary-dark: #d1d5db;
+  --ui-color-danger: #ef4444;
+  --ui-color-danger-dark: #dc2626;
+  --ui-color-text: #1f2937;
+  --ui-color-text-secondary: #6b7280;
+  --ui-color-surface: #ffffff;
+  --ui-color-surface-variant: #f9fafb;
+  --ui-color-border: #e5e7eb;
+  --ui-color-hover: #f3f4f6;
+  --ui-skeleton: #e5e7eb;
+  --ui-skeleton-highlight: #f3f4f6;
+}

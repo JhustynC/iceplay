@@ -1,0 +1,51 @@
+{
+  "typescript.tsdk": "node_modules\\typescript\\lib",
+
+  // Angular Language Service
+  "angular.forceStrictTemplates": true,
+
+  // ========== PRETTIER - Formato automático al guardar ==========
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  // Formateadores específicos por tipo de archivo
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // Emmet para templates inline (expand abbreviations como div.class, ul>li*3)
+  "emmet.includeLanguages": {
+    "typescript": "html",
+    "javascript": "html"
+  },
+  "emmet.triggerExpansionOnTab": true,
+
+  // Tailwind CSS IntelliSense en archivos TypeScript (templates inline)
+  "tailwindCSS.includeLanguages": {
+    "typescript": "html",
+    "javascript": "html"
+  },
+
+  // Habilitar sugerencias dentro de strings (donde van las clases)
+  "editor.quickSuggestions": {
+    "strings": "on"
+  },
+
+  // Detectar clases en atributos class y className
+  "tailwindCSS.classAttributes": ["class", "className", "[class]", "[className]"],
+
+  // Expresión regex para detectar clases en templates de Angular
+  "tailwindCSS.experimental.classRegex": [
+    ["class\\s*=\\s*[\"'`]([^\"'`]*)[\"'`]", 1],
+    ["\\[class\\]\\s*=\\s*[\"'`]([^\"'`]*)[\"'`]", 1]
+  ]
+}
