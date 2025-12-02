@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { RouterLink } from '@angular/router';
 import { ThemeService } from '../../../../core/services/theme.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-header-actions',
@@ -12,49 +13,21 @@ import { ThemeService } from '../../../../core/services/theme.service';
   imports: [MatButtonModule, MatIconModule, MatMenuModule, MatDividerModule, RouterLink],
   template: `
     <div class="flex items-center gap-1">
-      <button matIconButton routerLink="/live-match" aria-label="Live Match Admin View">
-        <mat-icon>list</mat-icon>
+      <!-- Admin Panel Link (only for authenticated users) -->
+      @if (authService.isAuthenticated()) {
+        <button
+          matIconButton
+          [routerLink]="authService.getDefaultRoute()"
+          aria-label="Panel de Administración"
+        >
+          <mat-icon>admin_panel_settings</mat-icon>
+        </button>
+      }
+
+      <!-- Theme Toggle -->
+      <button matIconButton [matMenuTriggerFor]="themeMenu" aria-label="Cambiar tema">
+        <mat-icon>{{ themeService.themeConfig().icon }}</mat-icon>
       </button>
-
-      <!-- User Menu -->
-      <button matIconButton [matMenuTriggerFor]="userMenu" aria-label="User menu">
-        <mat-icon>person_outline</mat-icon>
-      </button>
-
-      <mat-menu #userMenu="matMenu" xPosition="before">
-        @if (!isLoggedIn()) {
-          <button mat-menu-item>
-            <mat-icon>login</mat-icon>
-            <span>Sign in</span>
-          </button>
-          <button mat-menu-item>
-            <mat-icon>person_add</mat-icon>
-            <span>Sign up</span>
-          </button>
-        } @else {
-          <button mat-menu-item>
-            <mat-icon>account_circle</mat-icon>
-            <span>My Account</span>
-          </button>
-          <button mat-menu-item routerLink="/settings">
-            <mat-icon>settings</mat-icon>
-            <span>Settings</span>
-          </button>
-          <mat-divider />
-          <!-- Theme Selector -->
-          <button mat-menu-item [matMenuTriggerFor]="themeMenu">
-            <mat-icon>{{ themeService.themeConfig().icon }}</mat-icon>
-            <span>Theme</span>
-          </button>
-          <mat-divider />
-          <button mat-menu-item>
-            <mat-icon>logout</mat-icon>
-            <span>Sign out</span>
-          </button>
-        }
-      </mat-menu>
-
-      <!-- Theme Submenu -->
       <mat-menu #themeMenu="matMenu">
         @for (theme of themeService.availableThemes; track theme.key) {
           <button
@@ -70,6 +43,41 @@ import { ThemeService } from '../../../../core/services/theme.service';
           </button>
         }
       </mat-menu>
+
+      <!-- User Menu -->
+      <button matIconButton [matMenuTriggerFor]="userMenu" aria-label="Menú de usuario">
+        @if (authService.isAuthenticated()) {
+          <div class="user-avatar">{{ authService.userInitials() }}</div>
+        } @else {
+          <mat-icon>person_outline</mat-icon>
+        }
+      </button>
+
+      <mat-menu #userMenu="matMenu" xPosition="before">
+        @if (!authService.isAuthenticated()) {
+          <a mat-menu-item routerLink="/auth/login">
+            <mat-icon>login</mat-icon>
+            <span>Iniciar sesión</span>
+          </a>
+        } @else {
+          <div class="menu-header">
+            <strong>{{ authService.userFullName() }}</strong>
+            <span class="user-role">
+              {{ authService.isSuperAdmin() ? 'Super Admin' : 'Administrador' }}
+            </span>
+          </div>
+          <mat-divider />
+          <a mat-menu-item [routerLink]="authService.getDefaultRoute()">
+            <mat-icon>dashboard</mat-icon>
+            <span>Panel de Control</span>
+          </a>
+          <mat-divider />
+          <button mat-menu-item (click)="authService.logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Cerrar sesión</span>
+          </button>
+        }
+      </mat-menu>
     </div>
   `,
   styles: `
@@ -81,11 +89,38 @@ import { ThemeService } from '../../../../core/services/theme.service';
       margin-left: auto;
       color: var(--mat-sys-primary);
     }
+
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--mat-sys-primary);
+      color: var(--mat-sys-on-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.75rem;
+    }
+
+    .menu-header {
+      padding: 0.75rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.125rem;
+
+      strong {
+        font-size: 0.875rem;
+      }
+
+      .user-role {
+        font-size: 0.75rem;
+        color: var(--mat-sys-on-surface-variant);
+      }
+    }
   `,
 })
 export class HeaderActions {
   themeService = inject(ThemeService);
-
-  // TODO: Connect to real auth service
-  isLoggedIn = signal(true);
+  authService = inject(AuthService);
 }

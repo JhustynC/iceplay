@@ -13,7 +13,7 @@ import { RouterLink } from '@angular/router';
     <mat-toolbar class="px-2! shadow-md sm:px-4!">
       <!-- Menu button (mobile only) -->
       <button matIconButton aria-label="Open menu" class="md:hidden">
-        <mat-icon>menu</mat-icon>
+        <mat-icon>sports_soccer</mat-icon>
       </button>
 
       <!-- Logo -->

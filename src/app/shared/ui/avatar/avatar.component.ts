@@ -43,8 +43,8 @@ type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
       align-items: center;
       justify-content: center;
       border-radius: 50%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
+      background: var(--mat-sys-primary);
+      color: var(--mat-sys-on-primary);
       font-weight: 600;
       overflow: hidden;
     }
