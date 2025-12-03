@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, computed, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule, MatDatepickerInputEvent } from '@angular/material/datepicker';
@@ -7,6 +7,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { RouterLink } from '@angular/router';
 import { MATCHES_DATA, League, Match } from '../../../../data/matches-data';
+import { I18nService } from '../../../../core/services/i18n.service';
+import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 
 interface DayOption {
   dayOfWeek: string;
@@ -36,6 +38,7 @@ interface FilteredLeague {
     MatInputModule,
     MatFormFieldModule,
     RouterLink,
+    TranslatePipe,
   ],
   template: `
     <div class="mx-auto flex max-w-5xl flex-col gap-6 p-4 md:p-6">
@@ -43,7 +46,7 @@ interface FilteredLeague {
       <div class="card rounded-xl p-3 sm:p-4">
         <!-- Month/Year Header -->
         <div class="mb-3 flex items-center justify-between">
-          <h2 class="text-lg font-semibold">{{ currentMonthYear() }}</h2>
+          <h2 class="text-lg font-semibold">{{ formattedMonthYear() }}</h2>
 
           <!-- Calendar Picker -->
           <div class="flex items-center">
@@ -77,7 +80,7 @@ interface FilteredLeague {
                 (click)="selectDate(day.date)"
               >
                 <span class="text-[10px] uppercase sm:text-xs" [class.font-semibold]="day.isToday">
-                  {{ day.isToday ? 'HOY' : day.dayOfWeek }}
+                  {{ day.isToday ? ('common.today' | translate) : day.dayOfWeek }}
                 </span>
                 <p class="text-base font-bold sm:text-lg">{{ day.dayNumber }}</p>
               </button>
@@ -151,7 +154,9 @@ interface FilteredLeague {
                           >{{ match.homeScore }} - {{ match.awayScore }}</span
                         >
                       </div>
-                      <span class="text-secondary mt-1 block text-xs">Finished</span>
+                      <span class="text-secondary mt-1 block text-xs">{{
+                        'common.finished' | translate
+                      }}</span>
                     }
                   }
                 </div>
@@ -173,7 +178,7 @@ interface FilteredLeague {
       @if (filteredLeagues().length === 0) {
         <div class="card rounded-xl p-8 text-center">
           <mat-icon class="mb-2 text-5xl! opacity-50">sports_soccer</mat-icon>
-          <p class="text-secondary">No matches scheduled for this date.</p>
+          <p class="text-secondary">{{ 'matches.noMatchesForDate' | translate }}</p>
         </div>
       }
     </div>
@@ -249,7 +254,8 @@ interface FilteredLeague {
   `,
 })
 export default class MatchesList {
-  private readonly TOTAL_DAYS = 7; // Total days to show
+  private readonly i18nService = inject(I18nService);
+  private readonly TOTAL_DAYS = 7;
   private readonly VISIBLE_MOBILE = 3; // Days visible on mobile (centered)
 
   selectedDate = signal(this.getToday());
@@ -264,21 +270,10 @@ export default class MatchesList {
     startDate.setDate(selected.getDate() - daysBeforeCenter);
 
     const days: DayOption[] = [];
-    const dayNames = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
-    const monthNames = [
-      'ENE',
-      'FEB',
-      'MAR',
-      'ABR',
-      'MAY',
-      'JUN',
-      'JUL',
-      'AGO',
-      'SEP',
-      'OCT',
-      'NOV',
-      'DIC',
-    ];
+    // Use locale-aware day names based on current language
+    const locale = this.i18nService.getLocale();
+    const dayNames = this.getDayNames(locale);
+    const monthNames = this.getMonthNames(locale);
 
     for (let i = 0; i < this.TOTAL_DAYS; i++) {
       const date = new Date(startDate);
@@ -296,10 +291,12 @@ export default class MatchesList {
     return days;
   });
 
-  // Current month and year for header
-  currentMonthYear = computed(() => {
+  /**
+   * Formatted month and year for header, automatically translated based on current language
+   */
+  formattedMonthYear = computed(() => {
     const date = this.selectedDate();
-    return date.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+    return this.i18nService.formatDate(date, { month: 'long', year: 'numeric' });
   });
 
   private allLeagues = signal<League[]>(MATCHES_DATA);
@@ -380,5 +377,33 @@ export default class MatchesList {
     const newDate = new Date(current);
     newDate.setDate(current.getDate() + 1);
     this.selectedDate.set(newDate);
+  }
+
+  /**
+   * Gets abbreviated day names based on locale
+   */
+  private getDayNames(locale: string): string[] {
+    const baseDate = new Date(2024, 0, 7); // Sunday, January 7, 2024
+    const days: string[] = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(baseDate);
+      date.setDate(baseDate.getDate() + i);
+      const dayName = date.toLocaleDateString(locale, { weekday: 'short' }).toUpperCase();
+      days.push(dayName);
+    }
+    return days;
+  }
+
+  /**
+   * Gets abbreviated month names based on locale
+   */
+  private getMonthNames(locale: string): string[] {
+    const months: string[] = [];
+    for (let i = 0; i < 12; i++) {
+      const date = new Date(2024, i, 1);
+      const monthName = date.toLocaleDateString(locale, { month: 'short' }).toUpperCase();
+      months.push(monthName);
+    }
+    return months;
   }
 }
