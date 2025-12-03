@@ -1,0 +1,95 @@
+{
+  "common": {
+    "sports": "Deportes",
+    "matches": "Partidos",
+    "dashboard": "Dashboard",
+    "logout": "Cerrar sesión",
+    "login": "Iniciar sesión",
+    "close": "Cerrar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "loading": "Cargando...",
+    "noData": "No hay datos disponibles",
+    "today": "HOY",
+    "finished": "Finalizado"
+  },
+  "matches": {
+    "noMatchesForDate": "No hay partidos programados para esta fecha."
+  },
+  "match": {
+    "home": "Local",
+    "away": "Visitante",
+    "status": {
+      "scheduled": "Programado",
+      "live": "En vivo",
+      "fullTime": "Tiempo completo"
+    },
+    "tabs": {
+      "summary": "Resumen",
+      "statistics": "Estadísticas",
+      "lineups": "Alineaciones",
+      "h2h": "Historial"
+    },
+    "matchEvents": "Eventos del partido",
+    "table": {
+      "time": "Tiempo",
+      "event": "Evento",
+      "description": "Descripción",
+      "team": "Equipo"
+    },
+    "events": {
+      "goal": "Gol",
+      "substitution": "Sustitución",
+      "yellowCard": "Tarjeta amarilla",
+      "redCard": "Tarjeta roja"
+    },
+    "noEvents": "Aún no hay eventos registrados.",
+    "comingSoon": {
+      "statistics": "Estadísticas próximamente...",
+      "lineups": "Alineaciones próximamente...",
+      "h2h": "Historial próximamente..."
+    },
+    "notFound": {
+      "title": "Partido no encontrado",
+      "message": "El partido que buscas no existe.",
+      "backToMatches": "Volver a partidos"
+    }
+  },
+  "sports": {
+    "football": "Fútbol",
+    "basketball": "Baloncesto",
+    "volleyball": "Voleibol"
+  },
+  "header": {
+    "openSportsMenu": "Abrir menú de deportes",
+    "viewPublicSite": "Ver sitio público",
+    "changeLanguage": "Cambiar idioma",
+    "myAccount": "Mi cuenta"
+  },
+  "admin": {
+    "championships": "Campeonatos",
+    "teams": "Equipos",
+    "players": "Jugadores",
+    "fixtures": "Fixture",
+    "matches": "Partidos",
+    "standings": "Tabla de Posiciones",
+    "statistics": "Estadísticas",
+    "role": "Administrador"
+  },
+  "superAdmin": {
+    "organizations": "Organizaciones",
+    "announcements": "Anuncios",
+    "admins": "Administradores",
+    "reports": "Reportes",
+    "settings": "Configuración",
+    "role": "Super Administrador"
+  },
+  "sidenav": {
+    "footer": "IcePlay Sports"
+  }
+}

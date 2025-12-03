@@ -1,0 +1,95 @@
+{
+  "common": {
+    "sports": "Sports",
+    "matches": "Matches",
+    "dashboard": "Dashboard",
+    "logout": "Logout",
+    "login": "Login",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "loading": "Loading...",
+    "noData": "No data available",
+    "today": "TODAY",
+    "finished": "Finished"
+  },
+  "matches": {
+    "noMatchesForDate": "No matches scheduled for this date."
+  },
+  "match": {
+    "home": "Home",
+    "away": "Away",
+    "status": {
+      "scheduled": "Scheduled",
+      "live": "Live",
+      "fullTime": "Full Time"
+    },
+    "tabs": {
+      "summary": "Summary",
+      "statistics": "Statistics",
+      "lineups": "Line-ups",
+      "h2h": "H2H"
+    },
+    "matchEvents": "Match Events",
+    "table": {
+      "time": "Time",
+      "event": "Event",
+      "description": "Description",
+      "team": "Team"
+    },
+    "events": {
+      "goal": "Goal",
+      "substitution": "Substitution",
+      "yellowCard": "Yellow Card",
+      "redCard": "Red Card"
+    },
+    "noEvents": "No events recorded yet.",
+    "comingSoon": {
+      "statistics": "Statistics coming soon...",
+      "lineups": "Line-ups coming soon...",
+      "h2h": "Head to head coming soon..."
+    },
+    "notFound": {
+      "title": "Match not found",
+      "message": "The match you're looking for doesn't exist.",
+      "backToMatches": "Back to matches"
+    }
+  },
+  "sports": {
+    "football": "Football",
+    "basketball": "Basketball",
+    "volleyball": "Volleyball"
+  },
+  "header": {
+    "openSportsMenu": "Open sports menu",
+    "viewPublicSite": "View public site",
+    "changeLanguage": "Change language",
+    "myAccount": "My account"
+  },
+  "admin": {
+    "championships": "Championships",
+    "teams": "Teams",
+    "players": "Players",
+    "fixtures": "Fixtures",
+    "matches": "Matches",
+    "standings": "Standings",
+    "statistics": "Statistics",
+    "role": "Administrator"
+  },
+  "superAdmin": {
+    "organizations": "Organizations",
+    "announcements": "Announcements",
+    "admins": "Administrators",
+    "reports": "Reports",
+    "settings": "Settings",
+    "role": "Super Administrator"
+  },
+  "sidenav": {
+    "footer": "IcePlay Sports"
+  }
+}
