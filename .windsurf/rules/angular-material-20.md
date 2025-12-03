@@ -1,6 +1,7 @@
 ---
-alwaysApply: false
+trigger: always_on
 ---
+
 # Angular Material 20 Best Practices
 
 This project adheres to modern Angular Material best practices, emphasizing maintainability, performance, accessibility, scalability and correct usage of APIs.
