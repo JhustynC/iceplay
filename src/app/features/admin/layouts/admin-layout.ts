@@ -101,7 +101,7 @@ interface NavItem {
                 mat-list-item
                 [routerLink]="item.route"
                 routerLinkActive="active"
-                [routerLinkActiveOptions]="{ exact: item.route === '/admin' }"
+                [routerLinkActiveOptions]="{ exact: true }"
                 (click)="onNavClick()"
               >
                 <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
@@ -146,7 +146,7 @@ interface NavItem {
       justify-content: space-between;
       padding: 0 0.5rem;
       background: var(--mat-sys-surface-container);
-      border-bottom: 1px solid var(--mat-sys-outline-variant);
+      // border-bottom: 1px solid var(--mat-sys-outline-variant);
       flex-shrink: 0;
       z-index: 1000;
     }
@@ -212,7 +212,7 @@ interface NavItem {
     .sidenav {
       width: 240px;
       background: var(--mat-sys-surface-container);
-      border-right: 1px solid var(--mat-sys-outline-variant);
+      // border-right: 1px solid var(--mat-sys-outline-variant);
       border-radius: 0;
     }
 
@@ -229,13 +229,59 @@ interface NavItem {
         margin-bottom: 2px;
 
         &.active {
-          background: color-mix(in srgb, var(--mat-sys-primary) 15%, transparent);
+          background: color-mix(in srgb, var(--mat-sys-primary) 20%, transparent);
           color: var(--mat-sys-primary);
 
           mat-icon {
             color: var(--mat-sys-primary);
           }
         }
+      }
+    }
+
+    /* Reset ALL background states for non-active items */
+    ::ng-deep .nav-list .mat-mdc-list-item:not(.active) {
+      background: transparent !important;
+
+      /* Remove all state layers */
+      &::before,
+      &::after,
+      .mat-mdc-focus-indicator::before,
+      .mdc-list-item__ripple::before,
+      .mat-ripple-element,
+      .mdc-list-item__start::before,
+      .mdc-list-item__end::before {
+        background: transparent !important;
+        opacity: 0 !important;
+      }
+
+      /* Override any focus/hover states */
+      &:focus,
+      &:hover,
+      &:active,
+      &.cdk-focused,
+      &.cdk-keyboard-focused,
+      &.cdk-program-focused,
+      &.mat-mdc-list-item-interactive:focus,
+      &.mat-mdc-list-item-interactive:hover {
+        background: transparent !important;
+
+        &::before {
+          opacity: 0 !important;
+        }
+      }
+    }
+
+    /* Make sure active item keeps its style */
+    ::ng-deep .nav-list .mat-mdc-list-item.active {
+      background: color-mix(in srgb, var(--mat-sys-primary) 20%, transparent) !important;
+
+      .mdc-list-item__primary-text {
+        color: var(--mat-sys-primary) !important;
+      }
+
+      .mat-icon {
+        color: var(--mat-sys-primary) !important;
       }
     }
 
@@ -326,7 +372,7 @@ export default class AdminLayout {
   sidenavMode = signal<'side' | 'over'>('side');
 
   navItems: NavItem[] = [
-    { icon: 'dashboard', label: 'Dashboard', route: '/admin' },
+    { icon: 'dashboard', label: 'Dashboard', route: '/admin/dashboard' },
     { icon: 'emoji_events', label: 'Campeonatos', route: '/admin/championships' },
     { icon: 'groups', label: 'Equipos', route: '/admin/teams' },
     { icon: 'person', label: 'Jugadores', route: '/admin/players' },
