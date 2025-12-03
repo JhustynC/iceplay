@@ -1,17 +1,22 @@
-import { Component, inject, computed } from '@angular/core';
-import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
+import { ChangeDetectionStrategy, Component, inject, computed } from '@angular/core';
+import { Router, NavigationEnd, RouterOutlet } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs';
 import { Header } from './layouts/header/header';
+import { SportSidenavComponent } from './layouts/sport-sidenav/sport-sidenav.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Header],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterOutlet, Header, SportSidenavComponent],
   template: `
-    @if (showHeader()) {
+    @if (isPublicRoute()) {
       <app-header />
+      <sport-sidenav />
+    } @else {
+      <!-- Admin/SuperAdmin/Auth routes have their own layouts -->
+      <router-outlet />
     }
-    <router-outlet />
   `,
   styles: `
     :host {
@@ -22,10 +27,10 @@ import { Header } from './layouts/header/header';
   `,
 })
 export class App {
-  private router = inject(Router);
+  private readonly router = inject(Router);
 
-  // Track current URL
-  private currentUrl = toSignal(
+  /** Track current URL reactively */
+  private readonly currentUrl = toSignal(
     this.router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd),
       map((event) => event.urlAfterRedirects),
@@ -33,8 +38,8 @@ export class App {
     { initialValue: this.router.url },
   );
 
-  // Hide header on auth/admin/super-admin routes (they have their own layout or no header needed)
-  showHeader = computed(() => {
+  /** Public routes show main header + sport sidenav layout */
+  protected readonly isPublicRoute = computed(() => {
     const url = this.currentUrl();
     return !url.startsWith('/auth') && !url.startsWith('/admin') && !url.startsWith('/super-admin');
   });
