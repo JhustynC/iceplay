@@ -558,13 +558,18 @@ export default class DashboardPage {
   recentActivity = signal<Array<{ id: string; icon: string; text: string; time: string; color: string }>>([]);
   allTeams = signal<Team[]>([]);
   allChampionships = signal<Championship[]>([]);
+  private reloadSub?: Subscription;
 
   constructor() {
     effect((onCleanup) => {
       const user = this.authService.currentUser();
       if (user && user.organizationId) {
         const sub = this.loadDashboardData(user.organizationId);
-        onCleanup(() => sub.unsubscribe());
+        onCleanup(() => {
+          sub.unsubscribe();
+          this.reloadSub?.unsubscribe();
+          this.reloadSub = undefined;
+        });
       }
     });
   }
@@ -660,7 +665,9 @@ export default class DashboardPage {
         next: () => {
           const user = this.authService.currentUser();
           if (user?.organizationId) {
-            this.loadDashboardData(user.organizationId);
+            // Cancel any in-flight reload and start a new one, then allow effect cleanup to dispose it
+            this.reloadSub?.unsubscribe();
+            this.reloadSub = this.loadDashboardData(user.organizationId);
           }
         },
         error: (error) => {
