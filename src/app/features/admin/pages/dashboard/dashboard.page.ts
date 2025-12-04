@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, signal, computed, effect } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+  computed,
+  effect,
+} from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -555,7 +562,9 @@ export default class DashboardPage {
 
   stats = signal<StatCard[]>([]);
   upcomingMatches = signal<UpcomingMatch[]>([]);
-  recentActivity = signal<Array<{ id: string; icon: string; text: string; time: string; color: string }>>([]);
+  recentActivity = signal<
+    Array<{ id: string; icon: string; text: string; time: string; color: string }>
+  >([]);
   allTeams = signal<Team[]>([]);
   allChampionships = signal<Championship[]>([]);
   private reloadSub?: Subscription;
@@ -588,7 +597,12 @@ export default class DashboardPage {
 
         // Update stats
         this.stats.set([
-          { icon: 'emoji_events', label: 'Campeonatos', value: championships.length, route: '/admin/championships' },
+          {
+            icon: 'emoji_events',
+            label: 'Campeonatos',
+            value: championships.length,
+            route: '/admin/championships',
+          },
           { icon: 'groups', label: 'Equipos', value: teams.length, route: '/admin/teams' },
           { icon: 'person', label: 'Jugadores', value: players.length, route: '/admin/players' },
           { icon: 'sports', label: 'Partidos', value: 0, route: '/admin/matches' },
@@ -596,7 +610,9 @@ export default class DashboardPage {
 
         // Load matches for all championships
         if (championships.length > 0) {
-          const matchObservables = championships.map((champ) => this.matchService.getMatches(champ.id));
+          const matchObservables = championships.map((champ) =>
+            this.matchService.getMatches(champ.id),
+          );
           const innerSub = forkJoin(matchObservables).subscribe({
             next: (matchResults) => {
               const allMatches = matchResults.flat();
@@ -638,7 +654,12 @@ export default class DashboardPage {
                     id: m.id,
                     icon: 'sports_soccer',
                     text: `${homeTeam?.name || 'Equipo'} ${m.homeScore}-${m.awayScore} ${awayTeam?.name || 'Equipo'} (Finalizado)`,
-                    time: index === 0 ? 'Hace 2 horas' : index === 1 ? 'Hace 5 horas' : `Hace ${index + 1} días`,
+                    time:
+                      index === 0
+                        ? 'Hace 2 horas'
+                        : index === 1
+                          ? 'Hace 5 horas'
+                          : `Hace ${index + 1} días`,
                     color: '#22c55e',
                   };
                 });
