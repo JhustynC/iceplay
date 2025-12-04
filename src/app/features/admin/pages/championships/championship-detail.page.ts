@@ -20,10 +20,10 @@ import { MatTabsModule } from '@angular/material/tabs';
             <p class="page-subtitle">Campeonato ID: {{ id() }}</p>
           </div>
         </div>
-        <button matButton="outlined">
+        <a matButton="outlined" [routerLink]="['/admin/championships', id(), 'edit']">
           <mat-icon>edit</mat-icon>
           Editar
-        </button>
+        </a>
       </header>
 
       <mat-tab-group>

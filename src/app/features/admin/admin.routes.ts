@@ -26,6 +26,11 @@ const routes: Routes = [
         title: 'Nuevo Campeonato - Admin',
       },
       {
+        path: 'championships/:id/edit',
+        loadComponent: () => import('./pages/championships/championship-form.page'),
+        title: 'Editar Campeonato - Admin',
+      },
+      {
         path: 'championships/:id',
         loadComponent: () => import('./pages/championships/championship-detail.page'),
         title: 'Detalle Campeonato - Admin',
@@ -46,6 +51,11 @@ const routes: Routes = [
         title: 'Detalle Equipo - Admin',
       },
       {
+        path: 'teams/:id/edit',
+        loadComponent: () => import('./pages/teams/team-form.page'),
+        title: 'Editar Equipo - Admin',
+      },
+      {
         path: 'players',
         loadComponent: () => import('./pages/players/players-list.page'),
         title: 'Jugadores - Admin',
@@ -54,6 +64,11 @@ const routes: Routes = [
         path: 'players/new',
         loadComponent: () => import('./pages/players/player-form.page'),
         title: 'Nuevo Jugador - Admin',
+      },
+      {
+        path: 'players/:id/edit',
+        loadComponent: () => import('./pages/players/player-form.page'),
+        title: 'Editar Jugador - Admin',
       },
       {
         path: 'fixtures',
@@ -90,4 +105,3 @@ const routes: Routes = [
 ];
 
 export default routes;
-

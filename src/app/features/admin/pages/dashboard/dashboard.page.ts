@@ -1,12 +1,20 @@
-import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component, inject, signal, computed, effect } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { AuthService } from '../../../../core/services/auth.service';
+import { ChampionshipService } from '../../../../core/services/championship.service';
+import { TeamService } from '../../../../core/services/team.service';
+import { MatchService } from '../../../../core/services/match.service';
+import { PlayerService } from '../../../../core/services/player.service';
 import { SPORT_CONFIGS, type Sport } from '../../../../core/models';
+import { forkJoin, map } from 'rxjs';
+import { Match } from '../../../../core/models/match.model';
+import { Team } from '../../../../core/models/team.model';
+import { Championship } from '../../../../core/models/championship.model';
 
 interface StatCard {
   icon: string;
@@ -24,6 +32,7 @@ interface UpcomingMatch {
   time: string;
   venue: string;
   sport: Sport;
+  status?: string;
 }
 
 @Component({
@@ -42,7 +51,7 @@ interface UpcomingMatch {
       <!-- Header -->
       <header class="dashboard-header">
         <div>
-          <h1 class="title">Bienvenido, {{ authService.user()?.firstName }}</h1>
+          <h1 class="title">Bienvenido, {{ authService.userFullName() }}</h1>
           <p class="subtitle">Panel de administración de tu organización</p>
         </div>
         <div class="header-actions">
@@ -135,19 +144,23 @@ interface UpcomingMatch {
                   <mat-icon>more_vert</mat-icon>
                 </button>
                 <mat-menu #matchMenu="matMenu">
-                  <button mat-menu-item routerLink="/admin/match/{{ match.id }}/control">
-                    <mat-icon>sports</mat-icon>
-                    <span>Controlar Partido</span>
+                  @if (match.status === 'scheduled' || match.status === 'live') {
+                    <button mat-menu-item [routerLink]="['/admin/match', match.id, 'control']">
+                      <mat-icon>sports</mat-icon>
+                      <span>Controlar Partido</span>
+                    </button>
+                  }
+                  <button mat-menu-item [routerLink]="['/match', match.id]">
+                    <mat-icon>visibility</mat-icon>
+                    <span>Ver Detalles</span>
                   </button>
-                  <button mat-menu-item>
-                    <mat-icon>edit</mat-icon>
-                    <span>Editar</span>
-                  </button>
-                  <mat-divider />
-                  <button mat-menu-item class="text-red-500">
-                    <mat-icon>delete</mat-icon>
-                    <span>Eliminar</span>
-                  </button>
+                  @if (match.status === 'scheduled') {
+                    <mat-divider />
+                    <button mat-menu-item class="text-red-500" (click)="deleteMatch(match.id)">
+                      <mat-icon>delete</mat-icon>
+                      <span>Eliminar</span>
+                    </button>
+                  }
                 </mat-menu>
               </div>
             } @empty {
@@ -534,74 +547,130 @@ interface UpcomingMatch {
 })
 export default class DashboardPage {
   authService = inject(AuthService);
+  championshipService = inject(ChampionshipService);
+  teamService = inject(TeamService);
+  matchService = inject(MatchService);
+  playerService = inject(PlayerService);
+  router = inject(Router);
 
-  stats = signal<StatCard[]>([
-    { icon: 'emoji_events', label: 'Campeonatos', value: 3, route: '/admin/championships' },
-    { icon: 'groups', label: 'Equipos', value: 24, route: '/admin/teams' },
-    { icon: 'person', label: 'Jugadores', value: 312, change: 12, route: '/admin/players' },
-    { icon: 'sports', label: 'Partidos', value: 156, route: '/admin/matches' },
-  ]);
+  stats = signal<StatCard[]>([]);
+  upcomingMatches = signal<UpcomingMatch[]>([]);
+  recentActivity = signal<Array<{ id: string; icon: string; text: string; time: string; color: string }>>([]);
+  allTeams = signal<Team[]>([]);
+  allChampionships = signal<Championship[]>([]);
 
-  upcomingMatches = signal<UpcomingMatch[]>([
-    {
-      id: '1',
-      homeTeam: 'FC Barcelona',
-      awayTeam: 'Real Madrid',
-      date: 'Hoy',
-      time: '16:00',
-      venue: 'Camp Nou',
-      sport: 'football',
-    },
-    {
-      id: '2',
-      homeTeam: 'Lakers',
-      awayTeam: 'Warriors',
-      date: 'Mañana',
-      time: '19:30',
-      venue: 'Staples Center',
-      sport: 'basketball',
-    },
-    {
-      id: '3',
-      homeTeam: 'Tigres',
-      awayTeam: 'Panteras',
-      date: '15 Dic',
-      time: '15:00',
-      venue: 'Coliseo Municipal',
-      sport: 'volleyball',
-    },
-  ]);
+  constructor() {
+    effect(() => {
+        const user = this.authService.currentUser();
+        if (user && user.organizationId) {
+            this.loadDashboardData(user.organizationId);
+        }
+    });
+  }
 
-  recentActivity = signal([
-    {
-      id: '1',
-      icon: 'sports_soccer',
-      text: 'Barcelona 3-1 Valencia (Finalizado)',
-      time: 'Hace 2 horas',
-      color: '#22c55e',
-    },
-    {
-      id: '2',
-      icon: 'person_add',
-      text: 'Nuevo jugador: Carlos Mendoza',
-      time: 'Hace 4 horas',
-      color: '#3b82f6',
-    },
-    {
-      id: '3',
-      icon: 'edit',
-      text: 'Fixture actualizado para Jornada 12',
-      time: 'Ayer',
-      color: '#f59e0b',
-    },
-    {
-      id: '4',
-      icon: 'group_add',
-      text: 'Nuevo equipo registrado: Halcones FC',
-      time: 'Hace 2 días',
-      color: '#a855f7',
-    },
-  ]);
+  loadDashboardData(organizationId: string) {
+    // Load all data in parallel
+    forkJoin({
+      championships: this.championshipService.getChampionships(organizationId),
+      teams: this.teamService.getTeamsByOrganization(organizationId),
+      players: this.playerService.getPlayersByOrganization(organizationId),
+    }).subscribe({
+      next: ({ championships, teams, players }) => {
+        this.allChampionships.set(championships);
+        this.allTeams.set(teams);
+
+        // Update stats
+        this.stats.set([
+          { icon: 'emoji_events', label: 'Campeonatos', value: championships.length, route: '/admin/championships' },
+          { icon: 'groups', label: 'Equipos', value: teams.length, route: '/admin/teams' },
+          { icon: 'person', label: 'Jugadores', value: players.length, route: '/admin/players' },
+          { icon: 'sports', label: 'Partidos', value: 0, route: '/admin/matches' },
+        ]);
+
+        // Load matches for all championships
+        if (championships.length > 0) {
+          const matchObservables = championships.map((champ) => this.matchService.getMatches(champ.id));
+          forkJoin(matchObservables).subscribe({
+            next: (matchResults) => {
+              const allMatches = matchResults.flat();
+              this.stats.update((stats) => {
+                const newStats = [...stats];
+                newStats[3].value = allMatches.length;
+                return newStats;
+              });
+
+              // Get upcoming matches with team names
+              const upcoming = allMatches
+                .filter((m) => m.status === 'scheduled')
+                .slice(0, 5)
+                .map((m) => {
+                  const homeTeam = teams.find((t) => t.id === m.homeTeamId);
+                  const awayTeam = teams.find((t) => t.id === m.awayTeamId);
+                  const championship = championships.find((c) => c.id === m.championshipId);
+                  return {
+                    id: m.id,
+                    homeTeam: homeTeam?.name || 'Equipo Desconocido',
+                    awayTeam: awayTeam?.name || 'Equipo Desconocido',
+                    date: this.formatDate(m.scheduledDate),
+                    time: m.scheduledTime || '00:00',
+                    venue: m.venue || '',
+                    sport: championship?.sport || 'football',
+                    status: m.status,
+                  };
+                });
+              this.upcomingMatches.set(upcoming);
+
+              // Load recent activity from finished matches
+              const recent = allMatches
+                .filter((m) => m.status === 'finished')
+                .slice(0, 5)
+                .map((m, index) => {
+                  const homeTeam = teams.find((t) => t.id === m.homeTeamId);
+                  const awayTeam = teams.find((t) => t.id === m.awayTeamId);
+                  return {
+                    id: m.id,
+                    icon: 'sports_soccer',
+                    text: `${homeTeam?.name || 'Equipo'} ${m.homeScore}-${m.awayScore} ${awayTeam?.name || 'Equipo'} (Finalizado)`,
+                    time: index === 0 ? 'Hace 2 horas' : index === 1 ? 'Hace 5 horas' : `Hace ${index + 1} días`,
+                    color: '#22c55e',
+                  };
+                });
+              this.recentActivity.set(recent);
+            },
+            error: (error) => {
+              console.error('Error loading matches', error);
+            },
+          });
+        }
+      },
+      error: (error) => {
+        console.error('Error loading dashboard data', error);
+      },
+    });
+  }
+
+  deleteMatch(matchId: string): void {
+    if (confirm('¿Estás seguro de que deseas eliminar este partido?')) {
+      this.matchService.deleteMatch(matchId).subscribe({
+        next: () => {
+          const user = this.authService.currentUser();
+          if (user?.organizationId) {
+            this.loadDashboardData(user.organizationId);
+          }
+        },
+        error: (error) => {
+          console.error('Error deleting match', error);
+          alert('Error al eliminar el partido');
+        },
+      });
+    }
+  }
+
+  private formatDate(date: Date): string {
+    if (!date) return '';
+    const d = typeof date === 'string' ? new Date(date) : date;
+    return d.toLocaleDateString('es-EC', { day: 'numeric', month: 'short' });
+  }
 
   getIconBg(icon: string): string {
     const colors: Record<string, string> = {
@@ -614,6 +683,6 @@ export default class DashboardPage {
   }
 
   getSportIcon(sport: Sport): string {
-    return SPORT_CONFIGS[sport].icon;
+    return SPORT_CONFIGS[sport]?.icon || 'sports_soccer';
   }
 }

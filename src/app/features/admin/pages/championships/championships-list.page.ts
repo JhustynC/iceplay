@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, effect } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -6,7 +6,14 @@ import { MatTableModule } from '@angular/material/table';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSelectModule } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { SPORT_CONFIGS, type Championship, type Sport } from '../../../../core/models';
+import { ChampionshipStatus } from '../../../../core/models/championship.model';
+import { ChampionshipService } from '../../../../core/services/championship.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-championships-list',
@@ -19,6 +26,9 @@ import { SPORT_CONFIGS, type Championship, type Sport } from '../../../../core/m
     MatChipsModule,
     MatMenuModule,
     MatTooltipModule,
+    MatSelectModule,
+    MatFormFieldModule,
+    MatDividerModule,
   ],
   template: `
     <div class="page-container">
@@ -61,16 +71,25 @@ import { SPORT_CONFIGS, type Championship, type Sport } from '../../../../core/m
             <!-- Teams Column -->
             <ng-container matColumnDef="teams">
               <th mat-header-cell *matHeaderCellDef>Equipos</th>
-              <td mat-cell *matCellDef="let item">{{ item.totalTeams }}</td>
+              <td mat-cell *matCellDef="let item">{{ item.totalTeams || 0 }}</td>
             </ng-container>
 
             <!-- Status Column -->
             <ng-container matColumnDef="status">
               <th mat-header-cell *matHeaderCellDef>Estado</th>
               <td mat-cell *matCellDef="let item">
-                <mat-chip [class]="'status-' + item.status">
-                  {{ getStatusLabel(item.status) }}
-                </mat-chip>
+                <mat-form-field appearance="outline" class="status-select">
+                  <mat-select
+                    [value]="item.status"
+                    (selectionChange)="updateChampionshipStatus(item.id, $event.value)"
+                  >
+                    @for (status of availableStatuses; track status.value) {
+                      <mat-option [value]="status.value">
+                        {{ status.label }}
+                      </mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
               </td>
             </ng-container>
 
@@ -90,6 +109,22 @@ import { SPORT_CONFIGS, type Championship, type Sport } from '../../../../core/m
                     <mat-icon>edit</mat-icon>
                     <span>Editar</span>
                   </a>
+                  <mat-divider></mat-divider>
+                  <div class="text-secondary px-4 py-2 text-xs font-semibold">Cambiar Estado</div>
+                  @for (status of availableStatuses; track status.value) {
+                    <button
+                      mat-menu-item
+                      (click)="updateChampionshipStatus(item.id, status.value)"
+                      [class.selected-status]="item.status === status.value"
+                    >
+                      <mat-icon>{{ getStatusIcon(status.value) }}</mat-icon>
+                      <span>{{ status.label }}</span>
+                      @if (item.status === status.value) {
+                        <mat-icon class="ml-auto">check</mat-icon>
+                      }
+                    </button>
+                  }
+                  <mat-divider></mat-divider>
                   <button mat-menu-item>
                     <mat-icon>content_copy</mat-icon>
                     <span>Duplicar</span>
@@ -177,6 +212,29 @@ import { SPORT_CONFIGS, type Championship, type Sport } from '../../../../core/m
       --mat-chip-elevated-container-color: rgba(59, 130, 246, 0.15);
     }
 
+    .status-registration {
+      --mat-chip-label-text-color: #f59e0b;
+      --mat-chip-elevated-container-color: rgba(245, 158, 11, 0.15);
+    }
+
+    .status-cancelled {
+      --mat-chip-label-text-color: #ef4444;
+      --mat-chip-elevated-container-color: rgba(239, 68, 68, 0.15);
+    }
+
+    .status-select {
+      width: 140px;
+      font-size: 0.875rem;
+    }
+
+    .status-select ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+      display: none;
+    }
+
+    .selected-status {
+      background-color: var(--mat-sys-surface-container-high);
+    }
+
     .empty-state {
       text-align: center;
       padding: 4rem 2rem;
@@ -204,48 +262,46 @@ import { SPORT_CONFIGS, type Championship, type Sport } from '../../../../core/m
 export default class ChampionshipsListPage {
   displayedColumns = ['name', 'sport', 'teams', 'status', 'actions'];
 
-  championships = signal<Partial<Championship>[]>([
-    {
-      id: '1',
-      name: 'Liga Premier 2024',
-      sport: 'football',
-      season: '2024',
-      status: 'active',
-      totalTeams: 16,
-    },
-    {
-      id: '2',
-      name: 'Copa Baloncesto',
-      sport: 'basketball',
-      season: '2024',
-      status: 'active',
-      totalTeams: 8,
-    },
-    {
-      id: '3',
-      name: 'Torneo Voleibol Verano',
-      sport: 'volleyball',
-      season: '2024',
-      status: 'draft',
-      totalTeams: 6,
-    },
-  ]);
+  championshipService = inject(ChampionshipService);
+  authService = inject(AuthService);
+  snackBar = inject(MatSnackBar);
+
+  championships = signal<Championship[]>([]);
+
+  availableStatuses: { value: ChampionshipStatus; label: string }[] = [
+    { value: 'draft', label: 'Borrador' },
+    { value: 'registration', label: 'Inscripciones' },
+    { value: 'active', label: 'Activo' },
+    { value: 'finished', label: 'Finalizado' },
+    { value: 'cancelled', label: 'Cancelado' },
+  ];
+
+  constructor() {
+    effect(() => {
+      const user = this.authService.currentUser();
+      if (user && user.organizationId) {
+        this.championshipService.getChampionships(user.organizationId).subscribe((data) => {
+          this.championships.set(data);
+        });
+      }
+    });
+  }
 
   getSportIcon(sport: Sport): string {
-    return SPORT_CONFIGS[sport].icon;
+    return SPORT_CONFIGS[sport]?.icon || 'sports_soccer';
   }
 
   getSportLabel(sport: Sport): string {
-    return SPORT_CONFIGS[sport].label;
+    return SPORT_CONFIGS[sport]?.label || sport;
   }
 
   getSportColor(sport: Sport): string {
-    const colors: Record<Sport, string> = {
+    const colors: Record<string, string> = {
       football: '#22c55e',
       basketball: '#f59e0b',
       volleyball: '#3b82f6',
     };
-    return colors[sport];
+    return colors[sport] || '#6b7280';
   }
 
   getStatusLabel(status: string): string {
@@ -257,5 +313,36 @@ export default class ChampionshipsListPage {
       cancelled: 'Cancelado',
     };
     return labels[status] || status;
+  }
+
+  getStatusIcon(status: ChampionshipStatus): string {
+    const icons: Record<ChampionshipStatus, string> = {
+      draft: 'drafts',
+      registration: 'how_to_reg',
+      active: 'play_circle',
+      finished: 'check_circle',
+      cancelled: 'cancel',
+    };
+    return icons[status] || 'help';
+  }
+
+  updateChampionshipStatus(championshipId: string, newStatus: ChampionshipStatus): void {
+    this.championshipService.updateChampionship(championshipId, { status: newStatus }).subscribe({
+      next: (updatedChampionship) => {
+        // Update the championship in the list
+        this.championships.update((champs) =>
+          champs.map((c) => (c.id === championshipId ? updatedChampionship : c)),
+        );
+        this.snackBar.open(`Estado cambiado a "${this.getStatusLabel(newStatus)}"`, 'Cerrar', {
+          duration: 3000,
+        });
+      },
+      error: (error) => {
+        console.error('Error updating championship status', error);
+        this.snackBar.open('Error al cambiar el estado del campeonato', 'Cerrar', {
+          duration: 3000,
+        });
+      },
+    });
   }
 }
