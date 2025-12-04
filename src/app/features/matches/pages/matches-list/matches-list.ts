@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, signal, computed, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  signal,
+  computed,
+  inject,
+  effect,
+} from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule, MatDatepickerInputEvent } from '@angular/material/datepicker';
@@ -6,9 +13,16 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { RouterLink } from '@angular/router';
-import { MATCHES_DATA, League, Match } from '../../../../data/matches-data';
+import { forkJoin } from 'rxjs';
 import { I18nService } from '../../../../core/services/i18n.service';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
+import { MatchService } from '../../../../core/services/match.service';
+import { ChampionshipService } from '../../../../core/services/championship.service';
+import { TeamService } from '../../../../core/services/team.service';
+import { Match as BackendMatch } from '../../../../core/models/match.model';
+import { Championship } from '../../../../core/models/championship.model';
+import { Team } from '../../../../core/models/team.model';
+import { SPORT_CONFIGS } from '../../../../core/models/sport-config.model';
 
 interface DayOption {
   dayOfWeek: string;
@@ -19,12 +33,25 @@ interface DayOption {
   date: Date;
 }
 
+interface DisplayMatch {
+  id: string;
+  homeTeam: { id: string; name: string; logo: string };
+  awayTeam: { id: string; name: string; logo: string };
+  status: 'scheduled' | 'live' | 'finished';
+  time?: string;
+  minute?: string;
+  homeScore?: number;
+  awayScore?: number;
+  date: string;
+  league: string;
+}
+
 interface FilteredLeague {
   id: string;
   name: string;
   country: string;
   flagUrl: string;
-  matches: Match[];
+  matches: DisplayMatch[];
 }
 
 @Component({
@@ -93,89 +120,99 @@ interface FilteredLeague {
         </div>
       </div>
 
-      <!-- Leagues and Matches -->
-      @for (league of filteredLeagues(); track league.id) {
-        <div class="card overflow-hidden rounded-xl">
-          <!-- League Header -->
-          <div
-            class="flex items-center justify-between border-b border-(--mat-sys-outline-variant) p-4"
-          >
-            <div class="flex items-center gap-3">
-              <img
-                [src]="league.flagUrl"
-                [alt]="league.country + ' flag'"
-                class="h-auto w-6 rounded-sm"
-              />
-              <h2 class="text-lg font-bold">{{ league.name }}</h2>
-            </div>
-            <button matIconButton aria-label="More options">
-              <mat-icon>more_vert</mat-icon>
-            </button>
-          </div>
-
-          <!-- Matches -->
-          <div class="divide-y divide-(--mat-sys-outline-variant)">
-            @for (match of league.matches; track match.id) {
-              <div
-                class="match-row flex cursor-pointer items-center justify-between p-4"
-                [routerLink]="['/match', match.id]"
-              >
-                <!-- Home Team -->
-                <div class="flex w-2/5 items-center justify-end gap-3 text-right">
-                  <span
-                    class="hidden text-sm font-medium sm:inline-block"
-                    [class.text-red-500]="match.status === 'live'"
-                    >{{ match.homeTeam.name }}</span
-                  >
-                  <img [src]="match.homeTeam.logo" [alt]="match.homeTeam.name" class="h-7 w-7" />
-                </div>
-
-                <!-- Score/Time -->
-                <div class="w-1/5 text-center">
-                  @switch (match.status) {
-                    @case ('scheduled') {
-                      <div class="status-badge scheduled">
-                        <span class="text-sm font-bold">{{ match.time }}</span>
-                      </div>
-                    }
-                    @case ('live') {
-                      <div class="status-badge live">
-                        <span class="text-sm font-bold"
-                          >{{ match.homeScore }} - {{ match.awayScore }}</span
-                        >
-                      </div>
-                      <span class="text-primary mt-1 block text-xs font-semibold"
-                        >{{ match.minute }}'</span
-                      >
-                    }
-                    @case ('finished') {
-                      <div class="status-badge finished">
-                        <span class="text-sm font-bold"
-                          >{{ match.homeScore }} - {{ match.awayScore }}</span
-                        >
-                      </div>
-                      <span class="text-secondary mt-1 block text-xs">{{
-                        'common.finished' | translate
-                      }}</span>
-                    }
-                  }
-                </div>
-
-                <!-- Away Team -->
-                <div class="flex w-2/5 items-center justify-start gap-3 text-left">
-                  <img [src]="match.awayTeam.logo" [alt]="match.awayTeam.name" class="h-7 w-7" />
-                  <span class="hidden text-sm font-medium sm:inline-block">{{
-                    match.awayTeam.name
-                  }}</span>
-                </div>
-              </div>
-            }
-          </div>
+      <!-- Loading State -->
+      @if (isLoading()) {
+        <div class="card rounded-xl p-8 text-center">
+          <mat-icon class="mb-2 animate-spin text-5xl! opacity-50">refresh</mat-icon>
+          <p class="text-secondary">{{ 'common.loading' | translate }}</p>
         </div>
       }
 
+      <!-- Leagues and Matches -->
+      @if (!isLoading()) {
+        @for (league of filteredLeagues(); track league.id) {
+          <div class="card overflow-hidden rounded-xl">
+            <!-- League Header -->
+            <div
+              class="flex items-center justify-between border-b border-(--mat-sys-outline-variant) p-4"
+            >
+              <div class="flex items-center gap-3">
+                <img
+                  [src]="league.flagUrl"
+                  [alt]="league.country + ' flag'"
+                  class="h-auto w-6 rounded-sm"
+                />
+                <h2 class="text-lg font-bold">{{ league.name }}</h2>
+              </div>
+              <button matIconButton aria-label="More options">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+            </div>
+
+            <!-- Matches -->
+            <div class="divide-y divide-(--mat-sys-outline-variant)">
+              @for (match of league.matches; track match.id) {
+                <div
+                  class="match-row flex cursor-pointer items-center justify-between p-4"
+                  [routerLink]="['/match', match.id]"
+                >
+                  <!-- Home Team -->
+                  <div class="flex w-2/5 items-center justify-end gap-3 text-right">
+                    <span
+                      class="hidden text-sm font-medium sm:inline-block"
+                      [class.text-red-500]="match.status === 'live'"
+                      >{{ match.homeTeam.name }}</span
+                    >
+                    <img [src]="match.homeTeam.logo" [alt]="match.homeTeam.name" class="h-7 w-7" />
+                  </div>
+
+                  <!-- Score/Time -->
+                  <div class="w-1/5 text-center">
+                    @switch (match.status) {
+                      @case ('scheduled') {
+                        <div class="status-badge scheduled">
+                          <span class="text-sm font-bold">{{ match.time }}</span>
+                        </div>
+                      }
+                      @case ('live') {
+                        <div class="status-badge live">
+                          <span class="text-sm font-bold"
+                            >{{ match.homeScore }} - {{ match.awayScore }}</span
+                          >
+                        </div>
+                        <span class="text-primary mt-1 block text-xs font-semibold"
+                          >{{ match.minute }}'</span
+                        >
+                      }
+                      @case ('finished') {
+                        <div class="status-badge finished">
+                          <span class="text-sm font-bold"
+                            >{{ match.homeScore }} - {{ match.awayScore }}</span
+                          >
+                        </div>
+                        <span class="text-secondary mt-1 block text-xs">{{
+                          'common.finished' | translate
+                        }}</span>
+                      }
+                    }
+                  </div>
+
+                  <!-- Away Team -->
+                  <div class="flex w-2/5 items-center justify-start gap-3 text-left">
+                    <img [src]="match.awayTeam.logo" [alt]="match.awayTeam.name" class="h-7 w-7" />
+                    <span class="hidden text-sm font-medium sm:inline-block">{{
+                      match.awayTeam.name
+                    }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      }
+
       <!-- Empty State -->
-      @if (filteredLeagues().length === 0) {
+      @if (!isLoading() && filteredLeagues().length === 0) {
         <div class="card rounded-xl p-8 text-center">
           <mat-icon class="mb-2 text-5xl! opacity-50">sports_soccer</mat-icon>
           <p class="text-secondary">{{ 'matches.noMatchesForDate' | translate }}</p>
@@ -299,32 +336,163 @@ export default class MatchesList {
     return this.i18nService.formatDate(date, { month: 'long', year: 'numeric' });
   });
 
-  private allLeagues = signal<League[]>(MATCHES_DATA);
+  private matchService = inject(MatchService);
+  private championshipService = inject(ChampionshipService);
+  private teamService = inject(TeamService);
+
+  private allMatches = signal<BackendMatch[]>([]);
+  private allChampionships = signal<Championship[]>([]);
+  private allTeams = signal<Team[]>([]);
+  isLoading = signal(false);
+
+  constructor() {
+    // Load initial data
+    effect(() => {
+      this.loadMatches();
+    });
+  }
 
   // Filter leagues and matches by selected date
   filteredLeagues = computed<FilteredLeague[]>(() => {
     const selectedDateStr = this.formatDateToISO(this.selectedDate());
+    const matches = this.allMatches();
+    const championships = this.allChampionships();
+    const teams = this.allTeams();
 
-    const filtered: FilteredLeague[] = [];
+    // Group matches by championship
+    const matchesByChampionship = new Map<string, DisplayMatch[]>();
 
-    for (const league of this.allLeagues()) {
-      const matchesForDate = league.matches.filter(
-        (match: Match) => match.date === selectedDateStr,
-      );
+    for (const match of matches) {
+      const matchDate = this.formatDateToISO(match.scheduledDate);
+      if (matchDate === selectedDateStr) {
+        const homeTeam = teams.find((t) => t.id === match.homeTeamId);
+        const awayTeam = teams.find((t) => t.id === match.awayTeamId);
 
-      if (matchesForDate.length > 0) {
-        filtered.push({
-          id: league.id,
-          name: league.name,
-          country: league.country,
-          flagUrl: league.flagUrl,
-          matches: matchesForDate,
-        });
+        if (!homeTeam || !awayTeam) continue;
+
+        const championship = championships.find((c) => c.id === match.championshipId);
+        if (!championship) continue;
+
+        const displayMatch: DisplayMatch = {
+          id: match.id,
+          homeTeam: {
+            id: homeTeam.id,
+            name: homeTeam.name,
+            logo: homeTeam.logo || 'https://via.placeholder.com/50',
+          },
+          awayTeam: {
+            id: awayTeam.id,
+            name: awayTeam.name,
+            logo: awayTeam.logo || 'https://via.placeholder.com/50',
+          },
+          status: this.mapMatchStatus(match.status),
+          time: match.scheduledTime,
+          homeScore: match.homeScore,
+          awayScore: match.awayScore,
+          minute:
+            match.status === 'live' ? Math.floor(match.elapsedSeconds / 60).toString() : undefined,
+          date: matchDate,
+          league: championship.name,
+        };
+
+        if (!matchesByChampionship.has(match.championshipId)) {
+          matchesByChampionship.set(match.championshipId, []);
+        }
+        matchesByChampionship.get(match.championshipId)!.push(displayMatch);
       }
+    }
+
+    // Convert to FilteredLeague format
+    const filtered: FilteredLeague[] = [];
+    for (const [championshipId, championshipMatches] of matchesByChampionship) {
+      const championship = championships.find((c) => c.id === championshipId);
+      if (!championship) continue;
+
+      const sportConfig = SPORT_CONFIGS[championship.sport];
+      // Map sport to flag URL
+      const flagUrlMap: Record<string, string> = {
+        football: 'https://flagcdn.com/w40/ec.png',
+        basketball: 'https://flagcdn.com/w40/ec.png',
+        volleyball: 'https://flagcdn.com/w40/ec.png',
+      };
+      filtered.push({
+        id: championshipId,
+        name: championship.name,
+        country: 'Ecuador', // Default, could be from organization
+        flagUrl: flagUrlMap[championship.sport] || 'https://flagcdn.com/w40/ec.png',
+        matches: championshipMatches.sort((a, b) => {
+          // Sort by scheduled time
+          const timeA = a.time || '00:00';
+          const timeB = b.time || '00:00';
+          return timeA.localeCompare(timeB);
+        }),
+      });
     }
 
     return filtered;
   });
+
+  private loadMatches(): void {
+    this.isLoading.set(true);
+    // Get all active championships (public view)
+    this.championshipService.getActiveChampionships().subscribe({
+      next: (championships) => {
+        this.allChampionships.set(championships);
+
+        // Get all teams from all organizations
+        const organizationIds = [...new Set(championships.map((c) => c.organizationId))];
+        const teamObservables = organizationIds.map((orgId) =>
+          this.teamService.getTeamsByOrganization(orgId),
+        );
+
+        forkJoin(teamObservables).subscribe({
+          next: (teamsArrays) => {
+            const allTeams = teamsArrays.flat();
+            this.allTeams.set(allTeams);
+
+            // Load matches for all championships
+            const matchObservables = championships.map((c) => this.matchService.getMatches(c.id));
+            forkJoin(matchObservables).subscribe({
+              next: (matchesArrays) => {
+                const allMatches = matchesArrays.flat();
+                this.allMatches.set(allMatches);
+                this.isLoading.set(false);
+              },
+              error: (error) => {
+                console.error('Error loading matches', error);
+                this.isLoading.set(false);
+              },
+            });
+          },
+          error: (error) => {
+            console.error('Error loading teams', error);
+            this.isLoading.set(false);
+          },
+        });
+      },
+      error: (error) => {
+        console.error('Error loading championships', error);
+        this.isLoading.set(false);
+      },
+    });
+  }
+
+  private mapMatchStatus(status: string): 'scheduled' | 'live' | 'finished' {
+    if (
+      status === 'live' ||
+      status === 'warmup' ||
+      status === 'halftime' ||
+      status === 'break' ||
+      status === 'overtime' ||
+      status === 'penalties'
+    ) {
+      return 'live';
+    }
+    if (status === 'finished') {
+      return 'finished';
+    }
+    return 'scheduled';
+  }
 
   private getToday(): Date {
     const today = new Date();

@@ -1,18 +1,61 @@
-import { ChangeDetectionStrategy, Component, computed, input, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  inject,
+  signal,
+  effect,
+  OnDestroy,
+} from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTabsModule } from '@angular/material/tabs';
 import { RouterLink } from '@angular/router';
-import { findMatchById, Match, MatchEvent } from '../../../../data/matches-data';
+import { Subscription, forkJoin } from 'rxjs';
 import { I18nService } from '../../../../core/services/i18n.service';
 import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
+import { MatchService } from '../../../../core/services/match.service';
+import { MatchEventService } from '../../../../core/services/match-event.service';
+import { TeamService } from '../../../../core/services/team.service';
+import { ChampionshipService } from '../../../../core/services/championship.service';
+import { Match as BackendMatch } from '../../../../core/models/match.model';
+import { MatchEvent } from '../../../../core/models/event.model';
+import { Team } from '../../../../core/models/team.model';
+import { Championship } from '../../../../core/models/championship.model';
+
+interface DisplayMatch {
+  id: string;
+  homeTeam: { id: string; name: string; logo: string };
+  awayTeam: { id: string; name: string; logo: string };
+  status: 'scheduled' | 'live' | 'finished';
+  time?: string;
+  minute?: string;
+  homeScore?: number;
+  awayScore?: number;
+  date: Date;
+  league: string;
+  events?: DisplayEvent[];
+}
+
+interface DisplayEvent {
+  minute: string;
+  type: string;
+  description: string;
+  teamName: string;
+}
 
 @Component({
   selector: 'app-match-details',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MatIconModule, MatButtonModule, MatTabsModule, RouterLink, TranslatePipe],
   template: `
-    @if (match(); as m) {
+    @if (isLoading()) {
+      <div class="flex min-h-[50vh] flex-col items-center justify-center gap-4">
+        <mat-icon class="animate-spin text-6xl! opacity-50">refresh</mat-icon>
+        <p class="text-secondary">{{ 'common.loading' | translate }}</p>
+      </div>
+    } @else if (match(); as m) {
       <div class="flex min-h-full flex-col gap-6 p-4 md:p-6">
         <!-- Breadcrumbs -->
         <nav class="flex flex-wrap items-center gap-2 text-sm">
@@ -232,53 +275,204 @@ import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
     }
   `,
 })
-export default class MatchDetails {
+export default class MatchDetails implements OnDestroy {
   private readonly i18nService = inject(I18nService);
+  private readonly matchService = inject(MatchService);
+  private readonly matchEventService = inject(MatchEventService);
+  private readonly teamService = inject(TeamService);
+  private readonly championshipService = inject(ChampionshipService);
 
   matchId = input.required<string>();
 
-  match = computed<Match | undefined>(() => findMatchById(this.matchId()));
+  private matchData = signal<BackendMatch | null>(null);
+  private homeTeam = signal<Team | null>(null);
+  private awayTeam = signal<Team | null>(null);
+  private championship = signal<Championship | null>(null);
+  private events = signal<MatchEvent[]>([]);
+  private eventSubscription?: Subscription;
+  isLoading = signal(true);
+
+  match = computed<DisplayMatch | null>(() => {
+    const m = this.matchData();
+    const home = this.homeTeam();
+    const away = this.awayTeam();
+    const champ = this.championship();
+    const evts = this.events();
+
+    if (!m || !home || !away || !champ) return null;
+
+    return {
+      id: m.id,
+      homeTeam: {
+        id: home.id,
+        name: home.name,
+        logo: home.logo || 'https://via.placeholder.com/50',
+      },
+      awayTeam: {
+        id: away.id,
+        name: away.name,
+        logo: away.logo || 'https://via.placeholder.com/50',
+      },
+      status: this.mapMatchStatus(m.status),
+      time: m.scheduledTime,
+      minute: m.status === 'live' ? Math.floor(m.elapsedSeconds / 60).toString() : undefined,
+      homeScore: m.homeScore,
+      awayScore: m.awayScore,
+      date: m.scheduledDate,
+      league: champ.name,
+      events: this.transformEvents(evts, home, away),
+    };
+  });
+
+  constructor() {
+    effect(() => {
+      const id = this.matchId();
+      if (id) {
+        this.loadMatch(id);
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.eventSubscription?.unsubscribe();
+  }
+
+  private loadMatch(id: string): void {
+    this.isLoading.set(true);
+    this.matchService.getMatchById(id).subscribe({
+      next: (match) => {
+        this.matchData.set(match);
+        const isLive =
+          match.status === 'live' || match.status === 'warmup' || match.status === 'halftime';
+
+        // Load teams and championship
+        forkJoin({
+          homeTeam: this.teamService.getTeamById(match.homeTeamId),
+          awayTeam: this.teamService.getTeamById(match.awayTeamId),
+          championship: this.championshipService.getChampionshipById(match.championshipId),
+        }).subscribe({
+          next: ({ homeTeam, awayTeam, championship }) => {
+            this.homeTeam.set(homeTeam);
+            this.awayTeam.set(awayTeam);
+            this.championship.set(championship);
+            this.isLoading.set(false);
+
+            // Load events with polling if live
+            this.loadEvents(id, isLive);
+          },
+          error: (error) => {
+            console.error('Error loading match details', error);
+            this.isLoading.set(false);
+          },
+        });
+      },
+      error: (error) => {
+        console.error('Error loading match', error);
+        this.isLoading.set(false);
+      },
+    });
+  }
+
+  private loadEvents(matchId: string, isLive: boolean): void {
+    // Unsubscribe from previous polling if exists
+    this.eventSubscription?.unsubscribe();
+
+    // Use polling if live, single fetch otherwise
+    this.eventSubscription = this.matchEventService
+      .getMatchEventsWithPolling(matchId, isLive)
+      .subscribe({
+        next: (events) => {
+          this.events.set(events);
+        },
+        error: (error) => {
+          console.error('Error loading events', error);
+        },
+      });
+  }
+
+  private transformEvents(events: MatchEvent[], homeTeam: Team, awayTeam: Team): DisplayEvent[] {
+    return events
+      .map((event) => {
+        const team = event.teamId === homeTeam.id ? homeTeam : awayTeam;
+        return {
+          minute: event.extraMinute ? `${event.minute}+${event.extraMinute}'` : `${event.minute}'`,
+          type: event.type,
+          description: event.description || '',
+          teamName: team.name,
+        };
+      })
+      .sort((a, b) => {
+        // Sort by minute
+        const minuteA = parseInt(a.minute.replace(/[^0-9]/g, '')) || 0;
+        const minuteB = parseInt(b.minute.replace(/[^0-9]/g, '')) || 0;
+        return minuteA - minuteB;
+      });
+  }
+
+  private mapMatchStatus(status: string): 'scheduled' | 'live' | 'finished' {
+    if (
+      status === 'live' ||
+      status === 'warmup' ||
+      status === 'halftime' ||
+      status === 'break' ||
+      status === 'overtime' ||
+      status === 'penalties'
+    ) {
+      return 'live';
+    }
+    if (status === 'finished') {
+      return 'finished';
+    }
+    return 'scheduled';
+  }
 
   /**
    * Formats match date according to current language
-   * Example: "1 de diciembre de 2025" (es) or "December 1, 2025" (en)
    */
-  formattedMatchDate(match: Match): string {
-    const date = new Date(match.date);
-    return this.i18nService.formatDate(date, {
+  formattedMatchDate(match: DisplayMatch): string {
+    return this.i18nService.formatDate(match.date, {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
     });
   }
 
-  getEventIcon(type: MatchEvent['type']): string {
-    const icons: Record<MatchEvent['type'], string> = {
+  getEventIcon(type: string): string {
+    const icons: Record<string, string> = {
       goal: 'sports_soccer',
+      point: 'sports_soccer',
       substitution: 'swap_vert',
       yellow_card: 'square',
       red_card: 'square',
+      assist: 'sports_soccer',
+      foul: 'warning',
     };
-    return icons[type];
+    return icons[type] || 'event';
   }
 
-  getEventColor(type: MatchEvent['type']): string {
-    const colors: Record<MatchEvent['type'], string> = {
+  getEventColor(type: string): string {
+    const colors: Record<string, string> = {
       goal: '#4ade80',
+      point: '#4ade80',
       substitution: 'var(--mat-sys-on-surface-variant)',
       yellow_card: '#facc15',
       red_card: '#f87171',
+      assist: '#60a5fa',
+      foul: '#f59e0b',
     };
-    return colors[type];
+    return colors[type] || 'var(--mat-sys-on-surface-variant)';
   }
 
-  getEventLabel(type: MatchEvent['type']): string {
-    const labels: Record<MatchEvent['type'], string> = {
+  getEventLabel(type: string): string {
+    const labels: Record<string, string> = {
       goal: this.i18nService.translate('match.events.goal'),
+      point: this.i18nService.translate('match.events.goal'),
       substitution: this.i18nService.translate('match.events.substitution'),
       yellow_card: this.i18nService.translate('match.events.yellowCard'),
       red_card: this.i18nService.translate('match.events.redCard'),
+      assist: this.i18nService.translate('match.events.assist') || 'Assist',
+      foul: this.i18nService.translate('match.events.foul') || 'Foul',
     };
-    return labels[type];
+    return labels[type] || type;
   }
 }
