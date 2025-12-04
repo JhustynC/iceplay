@@ -277,12 +277,15 @@ export default class ChampionshipsListPage {
   ];
 
   constructor() {
-    effect(() => {
+    effect((onCleanup) => {
       const user = this.authService.currentUser();
       if (user && user.organizationId) {
-        this.championshipService.getChampionships(user.organizationId).subscribe((data) => {
+        const sub = this.championshipService
+          .getChampionships(user.organizationId)
+          .subscribe((data) => {
           this.championships.set(data);
         });
+        onCleanup(() => sub.unsubscribe());
       }
     });
   }

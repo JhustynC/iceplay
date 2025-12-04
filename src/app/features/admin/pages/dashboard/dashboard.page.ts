@@ -11,7 +11,7 @@ import { TeamService } from '../../../../core/services/team.service';
 import { MatchService } from '../../../../core/services/match.service';
 import { PlayerService } from '../../../../core/services/player.service';
 import { SPORT_CONFIGS, type Sport } from '../../../../core/models';
-import { forkJoin, map } from 'rxjs';
+import { forkJoin, map, Subscription } from 'rxjs';
 import { Match } from '../../../../core/models/match.model';
 import { Team } from '../../../../core/models/team.model';
 import { Championship } from '../../../../core/models/championship.model';
@@ -560,17 +560,19 @@ export default class DashboardPage {
   allChampionships = signal<Championship[]>([]);
 
   constructor() {
-    effect(() => {
-        const user = this.authService.currentUser();
-        if (user && user.organizationId) {
-            this.loadDashboardData(user.organizationId);
-        }
+    effect((onCleanup) => {
+      const user = this.authService.currentUser();
+      if (user && user.organizationId) {
+        const sub = this.loadDashboardData(user.organizationId);
+        onCleanup(() => sub.unsubscribe());
+      }
     });
   }
 
-  loadDashboardData(organizationId: string) {
+  loadDashboardData(organizationId: string): Subscription {
+    const composite = new Subscription();
     // Load all data in parallel
-    forkJoin({
+    const outerSub = forkJoin({
       championships: this.championshipService.getChampionships(organizationId),
       teams: this.teamService.getTeamsByOrganization(organizationId),
       players: this.playerService.getPlayersByOrganization(organizationId),
@@ -590,7 +592,7 @@ export default class DashboardPage {
         // Load matches for all championships
         if (championships.length > 0) {
           const matchObservables = championships.map((champ) => this.matchService.getMatches(champ.id));
-          forkJoin(matchObservables).subscribe({
+          const innerSub = forkJoin(matchObservables).subscribe({
             next: (matchResults) => {
               const allMatches = matchResults.flat();
               this.stats.update((stats) => {
@@ -641,12 +643,15 @@ export default class DashboardPage {
               console.error('Error loading matches', error);
             },
           });
+          composite.add(innerSub);
         }
       },
       error: (error) => {
         console.error('Error loading dashboard data', error);
       },
     });
+    composite.add(outerSub);
+    return composite;
   }
 
   deleteMatch(matchId: string): void {

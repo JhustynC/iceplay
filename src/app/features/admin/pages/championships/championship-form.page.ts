@@ -30,6 +30,7 @@ import {
 } from '../../../../core/models/championship.model';
 import { Sport } from '../../../../core/models/sport-config.model';
 import { filter, switchMap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-championship-form',
@@ -284,7 +285,7 @@ export default class ChampionshipFormPage implements OnInit {
   });
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe((params) => {
+    this.route.paramMap.pipe(takeUntilDestroyed()).subscribe((params) => {
       const id = params.get('id');
       if (id) {
         this.championshipId.set(id);
