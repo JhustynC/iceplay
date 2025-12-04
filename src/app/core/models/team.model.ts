@@ -56,6 +56,7 @@ export interface CreateTeamDto {
  * DTO for updating a team
  */
 export interface UpdateTeamDto {
+  championshipId?: string; // Allow changing championship
   name?: string;
   shortName?: string;
   logo?: string;
@@ -86,4 +87,3 @@ export interface TeamBasicInfo {
   logo?: string;
   primaryColor: string;
 }
-

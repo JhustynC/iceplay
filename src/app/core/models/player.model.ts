@@ -21,6 +21,7 @@ export interface Player {
   secondaryPosition?: string;
 
   // Additional information
+  document?: string; // ID number (cedula, DNI, etc.)
   birthDate?: Date;
   age?: number; // Computed
   nationality?: string;
@@ -84,6 +85,7 @@ export interface CreatePlayerDto {
   number: number;
   position: string;
   secondaryPosition?: string;
+  document?: string; // ID number (cedula, DNI, etc.)
   birthDate?: Date;
   nationality?: string;
   height?: number;
@@ -97,10 +99,12 @@ export interface CreatePlayerDto {
 export interface UpdatePlayerDto {
   firstName?: string;
   lastName?: string;
+  fullName?: string; // Allow updating fullName directly
   nickname?: string;
   number?: number;
   position?: string;
   secondaryPosition?: string;
+  document?: string;
   birthDate?: Date;
   nationality?: string;
   height?: number;
@@ -109,6 +113,8 @@ export interface UpdatePlayerDto {
   status?: PlayerStatus;
   suspensionEndDate?: Date;
   suspensionReason?: string;
+  teamId?: string; // Allow changing team
+  championshipId?: string; // Allow changing championship
 }
 
 /**
@@ -152,4 +158,3 @@ export function createEmptyPlayerStats(): PlayerStats {
     errors: 0,
   };
 }
-
