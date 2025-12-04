@@ -1,6 +1,6 @@
 import { Injectable, inject, signal, effect } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { catchError, of } from 'rxjs';
+import { catchError, of, firstValueFrom } from 'rxjs';
 
 export type Language = 'es' | 'en';
 
@@ -68,25 +68,25 @@ export class I18nService {
 
   /**
    * Loads translation file for the specified language from /i18n/{lang}.json
-   * Note: HttpClient returns Observables, so we need RxJS operators (catchError, of)
-   * to handle errors gracefully. This is the minimal RxJS usage required.
+   * Uses firstValueFrom to convert Observable to Promise for better async/await support
    *
    * @param lang - The language code to load
    */
-  private loadLanguage(lang: Language): void {
+  private async loadLanguage(lang: Language): Promise<void> {
     this._isLoading.set(true);
-    this.http
-      .get<Record<string, any>>(`/i18n/${lang}.json`)
-      .pipe(
-        catchError((error) => {
-          console.error(`Failed to load language: ${lang}`, error);
-          return of({}); // Return empty object on error to prevent app crash
-        }),
-      )
-      .subscribe((translations) => {
-        this._translations.set(translations);
-        this._isLoading.set(false);
-      });
+    try {
+      const translations = await firstValueFrom(
+        this.http.get<Record<string, any>>(`/i18n/${lang}.json`).pipe(
+          catchError((error) => {
+            console.error(`Failed to load language: ${lang}`, error);
+            return of({}); // Return empty object on error to prevent app crash
+          }),
+        )
+      );
+      this._translations.set(translations);
+    } finally {
+      this._isLoading.set(false);
+    }
   }
 
   /**
