@@ -145,6 +145,10 @@
     "yn": "^3.1.1"
   },
   "scripts": {
+    "dev": "nodemon src/app.ts",
+    "build": "tsc",
+    "start": "node dist/app.js",
+    "seed": "ts-node src/config/data/mongo/seed.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
