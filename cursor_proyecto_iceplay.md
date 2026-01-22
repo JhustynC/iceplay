@@ -2473,6 +2473,7 @@ iceplay/  (Angular - tu proyecto actual)
 └─────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
+<<<<<<< HEAD
 ¿Quieres que profundice en alguna parte específica del diagrama o que te explique cómo implementar algún componente?
 
 
@@ -3453,3 +3454,5 @@ iceplay/  (Angular - tu proyecto actual)
 │                                                                                                                  │
 │   ✅ Ya completado:                                                                                              │
 │   ├
+=======
+>>>>>>> 6f29f17e57d4fa8002e1d8e7c9a66150741e233f

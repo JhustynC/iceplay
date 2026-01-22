@@ -1,6 +1,6 @@
 import { Injectable, signal, inject, computed } from '@angular/core';
 import { ApiService } from './api.service';
-import { tap, map, finalize, catchError, of, firstValueFrom } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
 import { User } from '../models/user.model';
 
