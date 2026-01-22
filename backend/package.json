@@ -38,6 +38,7 @@
     "encodeurl": "^2.0.0",
     "engine.io": "^6.6.5",
     "engine.io-parser": "^5.2.3",
+    "env-var": "^7.5.0",
     "es-define-property": "^1.0.1",
     "es-errors": "^1.3.0",
     "es-object-atoms": "^1.1.1",
