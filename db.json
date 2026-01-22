@@ -120,11 +120,7 @@
         "pointsForDraw": 1,
         "pointsForLoss": 0,
         "roundsCount": 2,
-        "tiebreakers": [
-          "goal_difference",
-          "goals_for",
-          "head_to_head"
-        ],
+        "tiebreakers": ["goal_difference", "goals_for", "head_to_head"],
         "allowDraws": true,
         "extraTimeAllowed": false,
         "penaltyShootoutAllowed": false
@@ -143,7 +139,7 @@
       "sport": "basketball",
       "format": "league",
       "season": "2024",
-      "startDate": "2024-03-01T00:00:00Z",
+      "startDate": "2025-12-05T00:00:00Z",
       "endDate": "2024-08-31T00:00:00Z",
       "description": "Campeonato nacional de baloncesto.",
       "status": "active",
@@ -153,10 +149,7 @@
         "pointsForDraw": 1,
         "pointsForLoss": 0,
         "roundsCount": 2,
-        "tiebreakers": [
-          "goal_difference",
-          "goals_for"
-        ],
+        "tiebreakers": ["goal_difference", "goals_for"],
         "allowDraws": false,
         "extraTimeAllowed": true,
         "penaltyShootoutAllowed": false
@@ -185,10 +178,7 @@
         "pointsForDraw": 0,
         "pointsForLoss": 0,
         "roundsCount": 2,
-        "tiebreakers": [
-          "goal_difference",
-          "goals_for"
-        ],
+        "tiebreakers": ["goal_difference", "goals_for"],
         "allowDraws": false,
         "extraTimeAllowed": false,
         "penaltyShootoutAllowed": false
@@ -196,7 +186,7 @@
       "totalTeams": 10,
       "totalMatches": 90,
       "matchesPlayed": 15,
-      "createdAt": "2024-03-01T10:00:00Z",
+      "createdAt": "2025-12-05T10:00:00Z",
       "updatedAt": "2024-04-10T10:00:00Z"
     },
     {
@@ -214,11 +204,7 @@
         "pointsForDraw": 1,
         "pointsForLoss": 0,
         "roundsCount": 2,
-        "tiebreakers": [
-          "goal_difference",
-          "goals_for",
-          "head_to_head"
-        ],
+        "tiebreakers": ["goal_difference", "goals_for", "head_to_head"],
         "allowDraws": true,
         "extraTimeAllowed": false,
         "penaltyShootoutAllowed": false
@@ -246,11 +232,7 @@
         "pointsForDraw": 1,
         "pointsForLoss": 0,
         "roundsCount": 2,
-        "tiebreakers": [
-          "goal_difference",
-          "goals_for",
-          "head_to_head"
-        ],
+        "tiebreakers": ["goal_difference", "goals_for", "head_to_head"],
         "allowDraws": false,
         "extraTimeAllowed": true,
         "penaltyShootoutAllowed": false
@@ -278,10 +260,7 @@
         "pointsForDraw": 1,
         "pointsForLoss": 0,
         "roundsCount": 2,
-        "tiebreakers": [
-          "goal_difference",
-          "goals_for"
-        ],
+        "tiebreakers": ["goal_difference", "goals_for"],
         "allowDraws": false,
         "extraTimeAllowed": false,
         "penaltyShootoutAllowed": false
@@ -306,11 +285,7 @@
         "pointsForDraw": 1,
         "pointsForLoss": 0,
         "roundsCount": 2,
-        "tiebreakers": [
-          "goal_difference",
-          "goals_for",
-          "head_to_head"
-        ],
+        "tiebreakers": ["goal_difference", "goals_for", "head_to_head"],
         "allowDraws": false,
         "extraTimeAllowed": true,
         "penaltyShootoutAllowed": false
@@ -617,10 +592,10 @@
       "status": "finished",
       "round": 1,
       "matchday": 1,
-      "scheduledDate": "2024-03-01T18:00:00Z",
+      "scheduledDate": "2024-12-05T18:00:00Z",
       "scheduledTime": "18:00",
-      "actualStartTime": "2024-03-01T18:05:00Z",
-      "actualEndTime": "2024-03-01T19:55:00Z",
+      "actualStartTime": "2025-12-05T18:05:00Z",
+      "actualEndTime": "2025-12-05T19:55:00Z",
       "venue": "Estadio Central",
       "city": "Quito",
       "referee": "Carlos Mendoza",
@@ -641,7 +616,7 @@
       ],
       "isHighlighted": false,
       "createdAt": "2024-02-25T10:00:00Z",
-      "updatedAt": "2024-03-01T19:55:00Z"
+      "updatedAt": "2025-12-05T19:55:00Z"
     },
     {
       "id": "match-2",
