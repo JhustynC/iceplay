@@ -13,7 +13,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SPORT_CONFIGS, type Championship, type Sport } from '../../../../core/models';
 import { ChampionshipStatus } from '../../../../core/models/championship.model';
 import { ChampionshipService } from '../../../../core/services/championship.service';
-import { AuthService } from '../../../../core/services/auth.service';
+import { AuthService } from '../../../../core/services/auth.service_v1';
 
 @Component({
   selector: 'app-championships-list',
@@ -283,8 +283,8 @@ export default class ChampionshipsListPage {
         const sub = this.championshipService
           .getChampionships(user.organizationId)
           .subscribe((data) => {
-          this.championships.set(data);
-        });
+            this.championships.set(data);
+          });
         onCleanup(() => sub.unsubscribe());
       }
     });

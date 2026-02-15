@@ -23,7 +23,7 @@ export class TeamService {
    * Get all teams for a championship
    */
   getTeams(championshipId: string): Observable<Team[]> {
-    return this.api.get<Team[]>('teams', { championshipId }).pipe(
+    return this.api.get<Team[]>('teams/all', { championshipId }).pipe(
       map((teams) => teams.map((t) => this.parseTeamDates(t))),
       catchError((error) => this.handleError('Error fetching teams', error)),
     );
@@ -33,7 +33,7 @@ export class TeamService {
    * Get teams by organization
    */
   getTeamsByOrganization(organizationId: string): Observable<Team[]> {
-    return this.api.get<Team[]>('teams', { organizationId }).pipe(
+    return this.api.get<Team[]>('teams/all', { organizationId }).pipe(
       map((teams) => teams.map((t) => this.parseTeamDates(t))),
       catchError((error) => this.handleError('Error fetching organization teams', error)),
     );

@@ -18,4 +18,3 @@ export const publicGuard: CanActivateFn = () => {
   const defaultRoute = authService.getDefaultRoute();
   return router.createUrlTree([defaultRoute]);
 };
-

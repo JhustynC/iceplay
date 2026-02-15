@@ -9,7 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TeamService } from '../../../../core/services/team.service';
 import { ChampionshipService } from '../../../../core/services/championship.service';
-import { AuthService } from '../../../../core/services/auth.service';
+import { AuthService } from '../../../../core/services/auth.service_v1';
 import { Championship } from '../../../../core/models/championship.model';
 import { Team, UpdateTeamDto } from '../../../../core/models/team.model';
 
@@ -38,7 +38,7 @@ import { Team, UpdateTeamDto } from '../../../../core/models/team.model';
 
       @if (isLoading()) {
         <div class="content-card">
-          <p class="text-secondary text-center py-8">Cargando...</p>
+          <p class="text-secondary py-8 text-center">Cargando...</p>
         </div>
       } @else {
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-card">
@@ -126,7 +126,12 @@ import { Team, UpdateTeamDto } from '../../../../core/models/team.model';
 
               <mat-form-field appearance="outline">
                 <mat-label>Email</mat-label>
-                <input matInput formControlName="managerEmail" type="email" placeholder="entrenador@ejemplo.com" />
+                <input
+                  matInput
+                  formControlName="managerEmail"
+                  type="email"
+                  placeholder="entrenador@ejemplo.com"
+                />
                 @if (form.controls.managerEmail.hasError('email')) {
                   <mat-error>Ingresa un email válido</mat-error>
                 }
@@ -255,7 +260,9 @@ export default class TeamFormPage {
       next: (championships) => {
         // Include championships that are open for registration or active
         this.championships.set(
-          championships.filter((c) => c.status === 'active' || c.status === 'registration' || c.status === 'draft')
+          championships.filter(
+            (c) => c.status === 'active' || c.status === 'registration' || c.status === 'draft',
+          ),
         );
       },
       error: (error) => {
@@ -322,16 +329,18 @@ export default class TeamFormPage {
       });
     } else {
       // Create new team
-      this.teamService.createTeam({ ...teamData, championshipId, organizationId: user.organizationId }).subscribe({
-        next: () => {
-          this.router.navigate(['/admin/teams']);
-        },
-        error: (error) => {
-          console.error('Error creating team', error);
-          alert('Error al crear el equipo');
-          this.isSaving.set(false);
-        },
-      });
+      this.teamService
+        .createTeam({ ...teamData, championshipId, organizationId: user.organizationId })
+        .subscribe({
+          next: () => {
+            this.router.navigate(['/admin/teams']);
+          },
+          error: (error) => {
+            console.error('Error creating team', error);
+            alert('Error al crear el equipo');
+            this.isSaving.set(false);
+          },
+        });
     }
   }
 }

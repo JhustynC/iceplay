@@ -20,6 +20,7 @@ export interface User {
   createdAt: Date;
   lastLoginAt?: Date;
   isActive: boolean;
+  token?: string; // Optional token field for authentication
 }
 
 /**
@@ -60,4 +61,3 @@ export interface CreateAdminDto {
   organizationId: string;
   phone?: string;
 }
-

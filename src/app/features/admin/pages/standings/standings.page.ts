@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, signal, inject, effect, computed } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  signal,
+  inject,
+  effect,
+  computed,
+} from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -8,7 +15,7 @@ import { FormsModule } from '@angular/forms';
 import { ChampionshipService } from '../../../../core/services/championship.service';
 import { MatchService } from '../../../../core/services/match.service';
 import { TeamService } from '../../../../core/services/team.service';
-import { AuthService } from '../../../../core/services/auth.service';
+import { AuthService } from '../../../../core/services/auth.service_v1';
 import { Championship } from '../../../../core/models/championship.model';
 import { Match } from '../../../../core/models/match.model';
 import { Team } from '../../../../core/models/team.model';
@@ -63,7 +70,7 @@ interface TeamStanding {
 
       @if (isLoading()) {
         <div class="content-card">
-          <p class="text-secondary text-center py-8">Calculando posiciones...</p>
+          <p class="text-secondary py-8 text-center">Calculando posiciones...</p>
         </div>
       } @else if (standings().length > 0) {
         <div class="standings-card">
@@ -132,7 +139,12 @@ interface TeamStanding {
 
             <ng-container matColumnDef="goalDifference">
               <th mat-header-cell *matHeaderCellDef>DG</th>
-              <td mat-cell *matCellDef="let standing" [class.positive]="standing.goalDifference > 0" [class.negative]="standing.goalDifference < 0">
+              <td
+                mat-cell
+                *matCellDef="let standing"
+                [class.positive]="standing.goalDifference > 0"
+                [class.negative]="standing.goalDifference < 0"
+              >
                 {{ standing.goalDifference > 0 ? '+' : '' }}{{ standing.goalDifference }}
               </td>
             </ng-container>
@@ -161,7 +173,11 @@ interface TeamStanding {
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns" [class.highlighted]="row.position <= 3"></tr>
+            <tr
+              mat-row
+              *matRowDef="let row; columns: displayedColumns"
+              [class.highlighted]="row.position <= 3"
+            ></tr>
           </table>
         </div>
       } @else {
@@ -339,7 +355,18 @@ interface TeamStanding {
   `,
 })
 export default class AdminStandingsPage {
-  displayedColumns = ['position', 'team', 'played', 'won', 'drawn', 'lost', 'goals', 'goalDifference', 'points', 'form'];
+  displayedColumns = [
+    'position',
+    'team',
+    'played',
+    'won',
+    'drawn',
+    'lost',
+    'goals',
+    'goalDifference',
+    'points',
+    'form',
+  ];
 
   private championshipService = inject(ChampionshipService);
   private matchService = inject(MatchService);
@@ -490,6 +517,8 @@ export default class AdminStandingsPage {
   }
 
   getChampionshipName(): string {
-    return this.championships().find((c) => c.id === this.selectedChampionshipId)?.name || 'Campeonato';
+    return (
+      this.championships().find((c) => c.id === this.selectedChampionshipId)?.name || 'Campeonato'
+    );
   }
 }

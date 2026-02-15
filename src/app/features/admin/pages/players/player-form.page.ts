@@ -23,7 +23,7 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { PlayerService, CsvImportResult } from '../../../../core/services/player.service';
 import { TeamService } from '../../../../core/services/team.service';
 import { ChampionshipService } from '../../../../core/services/championship.service';
-import { AuthService } from '../../../../core/services/auth.service';
+import { AuthService } from '../../../../core/services/auth.service_v1';
 import { Player, PlayerStatus } from '../../../../core/models/player.model';
 import { Team } from '../../../../core/models/team.model';
 import { getSportConfig } from '../../../../core/models/sport-config.model';

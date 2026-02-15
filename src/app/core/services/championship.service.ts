@@ -23,7 +23,11 @@ export class ChampionshipService {
    * Get all active championships (for public view)
    */
   getActiveChampionships(): Observable<Championship[]> {
-    return this.api.get<Championship[]>('championships', { status: 'active' }).pipe(
+    console.log(
+      'Lista de championships',
+      this.api.get<Championship[]>('championships/all', { status: 1 }),
+    );
+    return this.api.get<Championship[]>('championships/all', { status: 1 }).pipe(
       map((championships) => championships.map((c) => this.parseChampionshipDates(c))),
       catchError((error) => this.handleError('Error fetching active championships', error)),
     );

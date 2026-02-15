@@ -6,7 +6,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { forkJoin } from 'rxjs';
 import { TeamService } from '../../../../core/services/team.service';
 import { ChampionshipService } from '../../../../core/services/championship.service';
-import { AuthService } from '../../../../core/services/auth.service';
+import { AuthService } from '../../../../core/services/auth.service_v1';
 import { Team } from '../../../../core/models/team.model';
 import { Championship } from '../../../../core/models/championship.model';
 

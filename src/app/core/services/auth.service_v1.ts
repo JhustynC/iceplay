@@ -90,21 +90,16 @@ export class AuthService {
 
     try {
       const users = await firstValueFrom(
-        this.api.post<User>('auth/login', {
-          email: credentials.email,
-          password: credentials.password,
-        }),
+        this.api.get<User[]>('users', { email: credentials.email }),
       );
 
-      const user = users; // Asumimos que el backend devuelve un array con un solo usuario
-
-      console.log('Respuesta del login:', users);
-
-      if (!user || !user.token) {
+      if (users.length === 0) {
         throw new Error('Credenciales inválidas');
       }
 
-      // Parsear fechas si vienen como string
+      const user = users[0];
+
+      //? Ensure dates are properly parsed
       if (typeof user.createdAt === 'string') {
         user.createdAt = new Date(user.createdAt);
       }
@@ -112,11 +107,12 @@ export class AuthService {
         user.lastLoginAt = new Date(user.lastLoginAt);
       }
 
-      // Guardar token real
-      this._token.set(user.token);
+      //? Generate a mock token (in real app, this comes from backend)
+      const mockToken = `mock-token-${user.id}-${Date.now()}`;
+      this._token.set(mockToken);
       this._currentUser.set(user);
 
-      // Redirección según rol
+      //? Redirect based on role
       if (user.role === 'super_admin') {
         this.router.navigate(['/super-admin']);
       } else {

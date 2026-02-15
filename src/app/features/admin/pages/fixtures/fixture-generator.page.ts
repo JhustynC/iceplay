@@ -17,7 +17,7 @@ import { forkJoin } from 'rxjs';
 import { ChampionshipService } from '../../../../core/services/championship.service';
 import { TeamService } from '../../../../core/services/team.service';
 import { MatchService } from '../../../../core/services/match.service';
-import { AuthService } from '../../../../core/services/auth.service';
+import { AuthService } from '../../../../core/services/auth.service_v1';
 import { Championship } from '../../../../core/models/championship.model';
 import { Team } from '../../../../core/models/team.model';
 import { Match, CreateMatchDto } from '../../../../core/models/match.model';
@@ -77,7 +77,10 @@ interface Round {
                 <h2 class="section-title">Seleccionar Campeonato</h2>
                 <mat-form-field appearance="outline" class="full-width">
                   <mat-label>Campeonato</mat-label>
-                  <mat-select formControlName="championshipId" (selectionChange)="onChampionshipChange()">
+                  <mat-select
+                    formControlName="championshipId"
+                    (selectionChange)="onChampionshipChange()"
+                  >
                     @for (champ of championships(); track champ.id) {
                       <mat-option [value]="champ.id">{{ champ.name }}</mat-option>
                     }
@@ -99,7 +102,9 @@ interface Round {
                       <button matButton="outlined" type="button" (click)="deselectAllTeams()">
                         Deseleccionar Todos
                       </button>
-                      <span class="teams-count">{{ selectedTeamsCount() }} equipos seleccionados</span>
+                      <span class="teams-count"
+                        >{{ selectedTeamsCount() }} equipos seleccionados</span
+                      >
                     </div>
                     <div class="teams-grid">
                       @for (team of availableTeams(); track team.id) {
@@ -131,7 +136,13 @@ interface Round {
 
                     <mat-form-field appearance="outline">
                       <mat-label>Días entre Rondas</mat-label>
-                      <input matInput type="number" formControlName="daysBetweenRounds" min="1" max="14" />
+                      <input
+                        matInput
+                        type="number"
+                        formControlName="daysBetweenRounds"
+                        min="1"
+                        max="14"
+                      />
                       <mat-hint>Días de descanso entre cada jornada</mat-hint>
                     </mat-form-field>
 
@@ -142,7 +153,13 @@ interface Round {
 
                     <mat-form-field appearance="outline">
                       <mat-label>Partidos por Día</mat-label>
-                      <input matInput type="number" formControlName="matchesPerDay" min="1" max="10" />
+                      <input
+                        matInput
+                        type="number"
+                        formControlName="matchesPerDay"
+                        min="1"
+                        max="10"
+                      />
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="full-width">
@@ -156,7 +173,9 @@ interface Round {
                 </div>
 
                 <div class="form-actions">
-                  <button matButton="outlined" type="button" routerLink="/admin/fixtures">Cancelar</button>
+                  <button matButton="outlined" type="button" routerLink="/admin/fixtures">
+                    Cancelar
+                  </button>
                   <button
                     matButton="filled"
                     type="button"
@@ -217,7 +236,13 @@ interface Round {
                             <input
                               type="time"
                               [value]="match.scheduledTime"
-                              (change)="updateMatchTime(round.roundNumber, match.matchday, $any($event.target).value)"
+                              (change)="
+                                updateMatchTime(
+                                  round.roundNumber,
+                                  match.matchday,
+                                  $any($event.target).value
+                                )
+                              "
                               class="time-input"
                             />
                           </td>
@@ -229,7 +254,13 @@ interface Round {
                             <input
                               type="date"
                               [value]="formatDateForInput(match.scheduledDate)"
-                              (change)="updateMatchDate(round.roundNumber, match.matchday, $any($event.target).value)"
+                              (change)="
+                                updateMatchDate(
+                                  round.roundNumber,
+                                  match.matchday,
+                                  $any($event.target).value
+                                )
+                              "
                               class="date-input"
                             />
                           </td>
@@ -241,7 +272,13 @@ interface Round {
                             <input
                               type="text"
                               [value]="match.venue || ''"
-                              (change)="updateMatchVenue(round.roundNumber, match.matchday, $any($event.target).value)"
+                              (change)="
+                                updateMatchVenue(
+                                  round.roundNumber,
+                                  match.matchday,
+                                  $any($event.target).value
+                                )
+                              "
                               placeholder="Estadio..."
                               class="venue-input"
                             />
@@ -251,7 +288,10 @@ interface Round {
                         <ng-container matColumnDef="actions">
                           <th mat-header-cell *matHeaderCellDef></th>
                           <td mat-cell *matCellDef="let match">
-                            <button matIconButton (click)="deleteMatch(round.roundNumber, match.matchday)">
+                            <button
+                              matIconButton
+                              (click)="deleteMatch(round.roundNumber, match.matchday)"
+                            >
                               <mat-icon>delete</mat-icon>
                             </button>
                           </td>
@@ -265,8 +305,15 @@ interface Round {
                 }
 
                 <div class="form-actions">
-                  <button matButton="outlined" type="button" (click)="clearFixture()">Limpiar</button>
-                  <button matButton="filled" type="button" [disabled]="isSaving()" (click)="saveFixture()">
+                  <button matButton="outlined" type="button" (click)="clearFixture()">
+                    Limpiar
+                  </button>
+                  <button
+                    matButton="filled"
+                    type="button"
+                    [disabled]="isSaving()"
+                    (click)="saveFixture()"
+                  >
                     <mat-icon>save</mat-icon>
                     Guardar Fixture
                   </button>
@@ -476,7 +523,9 @@ export default class FixtureGeneratorPage {
   private loadChampionships(organizationId: string): void {
     this.championshipService.getChampionships(organizationId).subscribe({
       next: (championships) => {
-        this.championships.set(championships.filter((c) => c.status === 'active' || c.status === 'registration'));
+        this.championships.set(
+          championships.filter((c) => c.status === 'active' || c.status === 'registration'),
+        );
       },
       error: (error) => {
         console.error('Error loading championships', error);
@@ -535,7 +584,13 @@ export default class FixtureGeneratorPage {
 
     const config = this.configForm.getRawValue();
     const rounds = this.generateRoundRobin(selectedTeams, config.format === 'double');
-    const roundsWithDates = this.assignDates(rounds, config.startDate, config.daysBetweenRounds, config.startTime, config.matchesPerDay);
+    const roundsWithDates = this.assignDates(
+      rounds,
+      config.startDate,
+      config.daysBetweenRounds,
+      config.startTime,
+      config.matchesPerDay,
+    );
 
     this.generatedRounds.set(roundsWithDates);
   }
@@ -591,7 +646,7 @@ export default class FixtureGeneratorPage {
           round: rounds.length + roundIdx + 1,
           homeTeamId: match.awayTeamId,
           awayTeamId: match.homeTeamId,
-        }))
+        })),
       );
       rounds.push(...secondHalf);
     }
@@ -607,7 +662,7 @@ export default class FixtureGeneratorPage {
     startDate: Date,
     daysBetweenRounds: number,
     startTime: string,
-    matchesPerDay: number
+    matchesPerDay: number,
   ): Round[] {
     const roundsWithDates: Round[] = [];
     let currentDate = new Date(startDate);
@@ -783,5 +838,4 @@ export default class FixtureGeneratorPage {
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
   }
-
 }

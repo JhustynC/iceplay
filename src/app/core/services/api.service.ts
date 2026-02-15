@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 export class ApiService {
   private http = inject(HttpClient);
 
-  private baseUrl = 'http://localhost:3000';
+  private baseUrl = 'http://localhost:3001/api';
 
   get<T>(path: string, params?: any): Observable<T> {
     let httpParams = new HttpParams();
@@ -19,6 +19,8 @@ export class ApiService {
         }
       });
     }
+    const quest = `${this.baseUrl}/${path}`;
+    console.log('Get de api service para login:', quest, 'con sus parámetros:', httpParams);
     return this.http.get<T>(`${this.baseUrl}/${path}`, { params: httpParams });
   }
 
@@ -38,4 +40,3 @@ export class ApiService {
     return this.http.delete<T>(`${this.baseUrl}/${path}`);
   }
 }
-

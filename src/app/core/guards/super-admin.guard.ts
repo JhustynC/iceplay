@@ -22,4 +22,3 @@ export const superAdminGuard: CanActivateFn = () => {
   // Otherwise redirect to home
   return router.createUrlTree(['/']);
 };
-

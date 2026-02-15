@@ -14,7 +14,7 @@ import { FormsModule } from '@angular/forms';
 import { MatchService } from '../../../../core/services/match.service';
 import { ChampionshipService } from '../../../../core/services/championship.service';
 import { TeamService } from '../../../../core/services/team.service';
-import { AuthService } from '../../../../core/services/auth.service';
+import { AuthService } from '../../../../core/services/auth.service_v1';
 import { Match, MatchStatus } from '../../../../core/models/match.model';
 import { Championship } from '../../../../core/models/championship.model';
 import { Team } from '../../../../core/models/team.model';
@@ -395,6 +395,7 @@ export default class AdminMatchesListPage {
 
     // Filter by date
     if (this.selectedDate) {
+      console.log('Matches en matches-ListKeyManager.page');
       const selectedDateStr = this.selectedDate.toISOString().split('T')[0];
       filtered = filtered.filter((m) => {
         const matchDateStr = m.scheduledDate.toISOString().split('T')[0];

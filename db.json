@@ -120,7 +120,11 @@
         "pointsForDraw": 1,
         "pointsForLoss": 0,
         "roundsCount": 2,
-        "tiebreakers": ["goal_difference", "goals_for", "head_to_head"],
+        "tiebreakers": [
+          "goal_difference",
+          "goals_for",
+          "head_to_head"
+        ],
         "allowDraws": true,
         "extraTimeAllowed": false,
         "penaltyShootoutAllowed": false
@@ -149,7 +153,10 @@
         "pointsForDraw": 1,
         "pointsForLoss": 0,
         "roundsCount": 2,
-        "tiebreakers": ["goal_difference", "goals_for"],
+        "tiebreakers": [
+          "goal_difference",
+          "goals_for"
+        ],
         "allowDraws": false,
         "extraTimeAllowed": true,
         "penaltyShootoutAllowed": false
@@ -178,7 +185,10 @@
         "pointsForDraw": 0,
         "pointsForLoss": 0,
         "roundsCount": 2,
-        "tiebreakers": ["goal_difference", "goals_for"],
+        "tiebreakers": [
+          "goal_difference",
+          "goals_for"
+        ],
         "allowDraws": false,
         "extraTimeAllowed": false,
         "penaltyShootoutAllowed": false
@@ -204,7 +214,11 @@
         "pointsForDraw": 1,
         "pointsForLoss": 0,
         "roundsCount": 2,
-        "tiebreakers": ["goal_difference", "goals_for", "head_to_head"],
+        "tiebreakers": [
+          "goal_difference",
+          "goals_for",
+          "head_to_head"
+        ],
         "allowDraws": true,
         "extraTimeAllowed": false,
         "penaltyShootoutAllowed": false
@@ -232,7 +246,11 @@
         "pointsForDraw": 1,
         "pointsForLoss": 0,
         "roundsCount": 2,
-        "tiebreakers": ["goal_difference", "goals_for", "head_to_head"],
+        "tiebreakers": [
+          "goal_difference",
+          "goals_for",
+          "head_to_head"
+        ],
         "allowDraws": false,
         "extraTimeAllowed": true,
         "penaltyShootoutAllowed": false
@@ -260,7 +278,10 @@
         "pointsForDraw": 1,
         "pointsForLoss": 0,
         "roundsCount": 2,
-        "tiebreakers": ["goal_difference", "goals_for"],
+        "tiebreakers": [
+          "goal_difference",
+          "goals_for"
+        ],
         "allowDraws": false,
         "extraTimeAllowed": false,
         "penaltyShootoutAllowed": false
@@ -285,7 +306,11 @@
         "pointsForDraw": 1,
         "pointsForLoss": 0,
         "roundsCount": 2,
-        "tiebreakers": ["goal_difference", "goals_for", "head_to_head"],
+        "tiebreakers": [
+          "goal_difference",
+          "goals_for",
+          "head_to_head"
+        ],
         "allowDraws": false,
         "extraTimeAllowed": true,
         "penaltyShootoutAllowed": false
@@ -417,6 +442,21 @@
       "primaryColor": "#0026a3",
       "secondaryColor": "#ff0000",
       "managerName": "",
+      "managerPhone": "",
+      "managerEmail": "",
+      "championshipId": "champ-1",
+      "organizationId": "org-1"
+    },
+    {
+      "id": "6729",
+      "name": "Nuevo",
+      "shortName": "nuevo",
+      "city": "Cuenca",
+      "homeVenue": "Cuenca",
+      "logo": "",
+      "primaryColor": "#1e40af",
+      "secondaryColor": "#ffffff",
+      "managerName": "Juan felipe",
       "managerPhone": "",
       "managerEmail": "",
       "championshipId": "champ-1",

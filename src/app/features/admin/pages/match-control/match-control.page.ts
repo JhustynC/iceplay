@@ -31,8 +31,13 @@ import { MatchEventService } from '../../../../core/services/match-event.service
 import { TeamService } from '../../../../core/services/team.service';
 import { PlayerService } from '../../../../core/services/player.service';
 import { ChampionshipService } from '../../../../core/services/championship.service';
-import { AuthService } from '../../../../core/services/auth.service';
-import { Match, MatchStatus, UpdateMatchDto, UpdateMatchScoreDto } from '../../../../core/models/match.model';
+import { AuthService } from '../../../../core/services/auth.service_v1';
+import {
+  Match,
+  MatchStatus,
+  UpdateMatchDto,
+  UpdateMatchScoreDto,
+} from '../../../../core/models/match.model';
 import { MatchEvent, CreateEventDto, formatEventMinute } from '../../../../core/models/event.model';
 import { Team } from '../../../../core/models/team.model';
 import { Player, CreatePlayerDto, UpdatePlayerDto } from '../../../../core/models/player.model';
@@ -99,15 +104,15 @@ interface LocalMatchEvent {
   template: `
     <div class="flex min-h-full flex-col gap-6 p-4 md:p-6">
       <!-- Header with Undo/Redo -->
-      <div class="flex items-center justify-between gap-4 flex-wrap">
+      <div class="flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-3">
           <a matIconButton routerLink="/admin/matches">
             <mat-icon>arrow_back</mat-icon>
           </a>
-          <h1 class="text-xl md:text-2xl font-bold">Control de Partido</h1>
+          <h1 class="text-xl font-bold md:text-2xl">Control de Partido</h1>
         </div>
 
-        <div class="flex items-center gap-2 flex-wrap">
+        <div class="flex flex-wrap items-center gap-2">
           <!-- Undo/Redo Buttons -->
           <div class="flex items-center gap-1">
             <button
@@ -144,7 +149,7 @@ interface LocalMatchEvent {
         <!-- Quick Actions (Admin) -->
         @if (showAdminPanel) {
           <section>
-            <h2 class="mb-4 px-2 text-lg md:text-xl font-bold">Acciones Rápidas</h2>
+            <h2 class="mb-4 px-2 text-lg font-bold md:text-xl">Acciones Rápidas</h2>
             <div class="flex flex-wrap gap-3">
               <button matButton="outlined" (click)="updateMatchStatus('live')">
                 <mat-icon>play_circle</mat-icon> Iniciar Partido
@@ -171,7 +176,7 @@ interface LocalMatchEvent {
             <mat-icon class="text-secondary">event</mat-icon>
             <div>
               <p class="text-secondary text-sm">{{ championship()?.name || 'Campeonato' }}</p>
-              <p class="font-medium text-sm md:text-base">
+              <p class="text-sm font-medium md:text-base">
                 {{ m.scheduledDate | date: 'fullDate' }} • {{ m.scheduledTime }}
               </p>
               <p class="text-secondary text-sm">{{ m.venue || 'Sin cancha' }}</p>
@@ -199,7 +204,10 @@ interface LocalMatchEvent {
               <div class="grid grid-cols-1 gap-4 py-4 md:grid-cols-2 lg:grid-cols-3">
                 <mat-form-field appearance="outline">
                   <mat-label>Estado del Partido</mat-label>
-                  <mat-select [value]="m.status" (selectionChange)="updateMatchStatus($event.value)">
+                  <mat-select
+                    [value]="m.status"
+                    (selectionChange)="updateMatchStatus($event.value)"
+                  >
                     <mat-option value="scheduled">Programado</mat-option>
                     <mat-option value="warmup">Calentamiento</mat-option>
                     <mat-option value="live">En Vivo</mat-option>
@@ -238,12 +246,20 @@ interface LocalMatchEvent {
 
                 <mat-form-field appearance="outline">
                   <mat-label>Cancha</mat-label>
-                  <input matInput [value]="m.venue || ''" (change)="updateVenue($any($event.target).value)" />
+                  <input
+                    matInput
+                    [value]="m.venue || ''"
+                    (change)="updateVenue($any($event.target).value)"
+                  />
                 </mat-form-field>
 
                 <mat-form-field appearance="outline">
                   <mat-label>Árbitro Principal</mat-label>
-                  <input matInput [value]="m.referee || ''" (change)="updateReferee($any($event.target).value)" />
+                  <input
+                    matInput
+                    [value]="m.referee || ''"
+                    (change)="updateReferee($any($event.target).value)"
+                  />
                 </mat-form-field>
               </div>
             </mat-expansion-panel>
@@ -261,7 +277,11 @@ interface LocalMatchEvent {
                 <div class="mb-4 flex flex-wrap gap-4">
                   <mat-form-field appearance="outline" class="min-w-[200px] flex-1">
                     <mat-label>Nombre del Equipo</mat-label>
-                    <input matInput [value]="homeTeam().name" (change)="updateTeamName('home', $any($event.target).value)" />
+                    <input
+                      matInput
+                      [value]="homeTeam().name"
+                      (change)="updateTeamName('home', $any($event.target).value)"
+                    />
                   </mat-form-field>
 
                   <mat-form-field appearance="outline" class="w-24">
@@ -278,7 +298,7 @@ interface LocalMatchEvent {
 
                 <mat-divider class="my-4!" />
 
-                <div class="mb-4 flex items-center justify-between flex-wrap gap-2">
+                <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
                   <h4 class="font-semibold">Jugadores ({{ homeTeam().players.length }})</h4>
                   <button matButton="outlined" (click)="addPlayer('home')">
                     <mat-icon>add</mat-icon> Agregar Jugador
@@ -290,7 +310,11 @@ interface LocalMatchEvent {
                     <div class="player-card">
                       <div class="player-card-header">
                         <span class="player-number">#{{ player.number }}</span>
-                        <button matIconButton color="warn" (click)="removePlayer('home', player.id)">
+                        <button
+                          matIconButton
+                          color="warn"
+                          (click)="removePlayer('home', player.id)"
+                        >
                           <mat-icon class="text-lg!">delete</mat-icon>
                         </button>
                       </div>
@@ -299,7 +323,9 @@ interface LocalMatchEvent {
                         <input
                           matInput
                           [value]="player.name"
-                          (change)="updatePlayer('home', player.id, 'name', $any($event.target).value)"
+                          (change)="
+                            updatePlayer('home', player.id, 'name', $any($event.target).value)
+                          "
                         />
                       </mat-form-field>
                       <div class="flex flex-col gap-2">
@@ -309,14 +335,18 @@ interface LocalMatchEvent {
                             matInput
                             type="number"
                             [value]="player.number"
-                            (change)="updatePlayer('home', player.id, 'number', +$any($event.target).value)"
+                            (change)="
+                              updatePlayer('home', player.id, 'number', +$any($event.target).value)
+                            "
                           />
                         </mat-form-field>
                         <mat-form-field appearance="outline" class="flex-1">
                           <mat-label>Posición</mat-label>
                           <mat-select
                             [value]="player.position"
-                            (selectionChange)="updatePlayer('home', player.id, 'position', $event.value)"
+                            (selectionChange)="
+                              updatePlayer('home', player.id, 'position', $event.value)
+                            "
                           >
                             @for (position of availablePositions(); track position.code) {
                               <mat-option [value]="position.code">{{ position.label }}</mat-option>
@@ -343,7 +373,11 @@ interface LocalMatchEvent {
                 <div class="mb-4 flex flex-wrap gap-4">
                   <mat-form-field appearance="outline" class="min-w-[200px] flex-1">
                     <mat-label>Nombre del Equipo</mat-label>
-                    <input matInput [value]="awayTeam().name" (change)="updateTeamName('away', $any($event.target).value)" />
+                    <input
+                      matInput
+                      [value]="awayTeam().name"
+                      (change)="updateTeamName('away', $any($event.target).value)"
+                    />
                   </mat-form-field>
 
                   <mat-form-field appearance="outline" class="w-24">
@@ -360,7 +394,7 @@ interface LocalMatchEvent {
 
                 <mat-divider class="my-4!" />
 
-                <div class="mb-4 flex items-center justify-between flex-wrap gap-2">
+                <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
                   <h4 class="font-semibold">Jugadores ({{ awayTeam().players.length }})</h4>
                   <button matButton="outlined" (click)="addPlayer('away')">
                     <mat-icon>add</mat-icon> Agregar Jugador
@@ -372,7 +406,12 @@ interface LocalMatchEvent {
                     <div class="player-card">
                       <div class="player-card-header">
                         <span class="player-number">#{{ player.number }}</span>
-                        <button matIconButton color="warn" (click)="removePlayer('away', player.id)" class="h-8! w-8!">
+                        <button
+                          matIconButton
+                          color="warn"
+                          (click)="removePlayer('away', player.id)"
+                          class="h-8! w-8!"
+                        >
                           <mat-icon class="text-lg!">close</mat-icon>
                         </button>
                       </div>
@@ -381,7 +420,9 @@ interface LocalMatchEvent {
                         <input
                           matInput
                           [value]="player.name"
-                          (change)="updatePlayer('away', player.id, 'name', $any($event.target).value)"
+                          (change)="
+                            updatePlayer('away', player.id, 'name', $any($event.target).value)
+                          "
                         />
                       </mat-form-field>
                       <div class="flex flex-col gap-2">
@@ -391,14 +432,18 @@ interface LocalMatchEvent {
                             matInput
                             type="number"
                             [value]="player.number"
-                            (change)="updatePlayer('away', player.id, 'number', +$any($event.target).value)"
+                            (change)="
+                              updatePlayer('away', player.id, 'number', +$any($event.target).value)
+                            "
                           />
                         </mat-form-field>
                         <mat-form-field appearance="outline" class="flex-1">
                           <mat-label>Posición</mat-label>
                           <mat-select
                             [value]="player.position"
-                            (selectionChange)="updatePlayer('away', player.id, 'position', $event.value)"
+                            (selectionChange)="
+                              updatePlayer('away', player.id, 'position', $event.value)
+                            "
                           >
                             @for (position of availablePositions(); track position.code) {
                               <mat-option [value]="position.code">{{ position.label }}</mat-option>
@@ -417,9 +462,15 @@ interface LocalMatchEvent {
         <!-- Score Header -->
         <div class="score-header">
           <!-- Home Team Score -->
-          <div class="card flex min-w-[140px] flex-1 flex-col items-center gap-3 rounded-xl p-4 sm:flex-row md:p-6">
+          <div
+            class="card flex min-w-[140px] flex-1 flex-col items-center gap-3 rounded-xl p-4 sm:flex-row md:p-6"
+          >
             @if (homeTeam().logo) {
-              <img class="h-14 w-14 sm:h-16 sm:w-16" [alt]="homeTeam().name + ' Logo'" [src]="homeTeam().logo" />
+              <img
+                class="h-14 w-14 sm:h-16 sm:w-16"
+                [alt]="homeTeam().name + ' Logo'"
+                [src]="homeTeam().logo"
+              />
             } @else {
               <div class="team-avatar h-14 w-14 sm:h-16 sm:w-16">
                 {{ getTeamInitials(homeTeam().name) }}
@@ -437,7 +488,9 @@ interface LocalMatchEvent {
             @if (m.status === 'live') {
               <div class="flex items-center justify-center gap-2">
                 <span class="relative flex h-3 w-3">
-                  <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
+                  <span
+                    class="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"
+                  ></span>
                   <span class="relative inline-flex h-3 w-3 rounded-full bg-green-500"></span>
                 </span>
                 <p class="text-primary text-sm font-semibold uppercase">En Vivo</p>
@@ -511,14 +564,20 @@ interface LocalMatchEvent {
           </div>
 
           <!-- Away Team Score -->
-          <div class="card flex min-w-[140px] flex-1 flex-col-reverse items-center justify-end gap-3 rounded-xl p-4 sm:flex-row md:p-6">
+          <div
+            class="card flex min-w-[140px] flex-1 flex-col-reverse items-center justify-end gap-3 rounded-xl p-4 sm:flex-row md:p-6"
+          >
             <div class="text-center sm:text-right">
               <p class="text-secondary text-sm font-medium">Visitante</p>
               <p class="text-lg font-bold md:text-xl">{{ awayTeam().name }}</p>
               <p class="text-primary text-3xl font-black md:text-4xl">{{ awayTeam().score }}</p>
             </div>
             @if (awayTeam().logo) {
-              <img class="h-14 w-14 sm:h-16 sm:w-16" [alt]="awayTeam().name + ' Logo'" [src]="awayTeam().logo" />
+              <img
+                class="h-14 w-14 sm:h-16 sm:w-16"
+                [alt]="awayTeam().name + ' Logo'"
+                [src]="awayTeam().logo"
+              />
             } @else {
               <div class="team-avatar h-14 w-14 sm:h-16 sm:w-16">
                 {{ getTeamInitials(awayTeam().name) }}
@@ -530,17 +589,21 @@ interface LocalMatchEvent {
         <!-- Team Lineups & Actions -->
         @if (m.status === 'live' || m.status === 'warmup') {
           <section>
-            <h2 class="mb-4 px-2 text-lg md:text-xl font-bold">Alineaciones y Acciones</h2>
+            <h2 class="mb-4 px-2 text-lg font-bold md:text-xl">Alineaciones y Acciones</h2>
             <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
               <!-- Home Team -->
               <div class="card rounded-xl border border-(--mat-sys-outline-variant) p-4">
-                <h3 class="mb-3 px-2 text-base md:text-lg font-semibold">{{ homeTeam().name }}</h3>
+                <h3 class="mb-3 px-2 text-base font-semibold md:text-lg">{{ homeTeam().name }}</h3>
                 <div class="space-y-1">
                   @for (player of homeTeam().players; track player.id) {
-                    <div class="player-row grid grid-cols-[1fr_auto] items-center gap-2 rounded-lg p-2">
+                    <div
+                      class="player-row grid grid-cols-[1fr_auto] items-center gap-2 rounded-lg p-2"
+                    >
                       <div>
                         <p class="text-sm md:text-base">#{{ player.number }} {{ player.name }}</p>
-                        <p class="text-secondary text-xs">{{ getPositionLabel(player.position) }}</p>
+                        <p class="text-secondary text-xs">
+                          {{ getPositionLabel(player.position) }}
+                        </p>
                       </div>
                       <div class="flex flex-wrap items-center gap-1 md:gap-2">
                         @for (eventType of availableEventTypes(); track eventType.code) {
@@ -561,13 +624,17 @@ interface LocalMatchEvent {
 
               <!-- Away Team -->
               <div class="card rounded-xl border border-(--mat-sys-outline-variant) p-4">
-                <h3 class="mb-3 px-2 text-base md:text-lg font-semibold">{{ awayTeam().name }}</h3>
+                <h3 class="mb-3 px-2 text-base font-semibold md:text-lg">{{ awayTeam().name }}</h3>
                 <div class="space-y-1">
                   @for (player of awayTeam().players; track player.id) {
-                    <div class="player-row grid grid-cols-[1fr_auto] items-center gap-2 rounded-lg p-2">
+                    <div
+                      class="player-row grid grid-cols-[1fr_auto] items-center gap-2 rounded-lg p-2"
+                    >
                       <div>
                         <p class="text-sm md:text-base">#{{ player.number }} {{ player.name }}</p>
-                        <p class="text-secondary text-xs">{{ getPositionLabel(player.position) }}</p>
+                        <p class="text-secondary text-xs">
+                          {{ getPositionLabel(player.position) }}
+                        </p>
                       </div>
                       <div class="flex flex-wrap items-center gap-1 md:gap-2">
                         @for (eventType of availableEventTypes(); track eventType.code) {
@@ -591,7 +658,7 @@ interface LocalMatchEvent {
 
         <!-- Live Event Log -->
         <section>
-          <h2 class="mb-4 px-2 text-lg md:text-xl font-bold">Registro de Eventos</h2>
+          <h2 class="mb-4 px-2 text-lg font-bold md:text-xl">Registro de Eventos</h2>
           <div class="card overflow-hidden rounded-xl border border-(--mat-sys-outline-variant)">
             @if (events().length === 0) {
               <div class="text-secondary p-8 text-center">
@@ -603,17 +670,35 @@ interface LocalMatchEvent {
                 <table class="w-full">
                   <thead>
                     <tr class="table-header">
-                      <th class="w-24 px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Tiempo</th>
-                      <th class="w-32 px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Evento</th>
-                      <th class="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Jugador</th>
-                      <th class="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Equipo</th>
-                      <th class="w-20 px-4 py-3 text-right text-xs font-medium tracking-wider uppercase">Acciones</th>
+                      <th
+                        class="w-24 px-4 py-3 text-left text-xs font-medium tracking-wider uppercase"
+                      >
+                        Tiempo
+                      </th>
+                      <th
+                        class="w-32 px-4 py-3 text-left text-xs font-medium tracking-wider uppercase"
+                      >
+                        Evento
+                      </th>
+                      <th class="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">
+                        Jugador
+                      </th>
+                      <th class="px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">
+                        Equipo
+                      </th>
+                      <th
+                        class="w-20 px-4 py-3 text-right text-xs font-medium tracking-wider uppercase"
+                      >
+                        Acciones
+                      </th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-(--mat-sys-outline-variant)">
                     @for (event of events(); track event.id) {
                       <tr>
-                        <td class="text-secondary px-4 py-3 font-mono text-sm whitespace-nowrap">{{ event.time }}</td>
+                        <td class="text-secondary px-4 py-3 font-mono text-sm whitespace-nowrap">
+                          {{ event.time }}
+                        </td>
                         <td class="px-4 py-3 whitespace-nowrap">
                           <span
                             class="inline-flex items-center gap-2 text-sm font-semibold"
@@ -626,7 +711,9 @@ interface LocalMatchEvent {
                         <td class="px-4 py-3 text-sm whitespace-nowrap">
                           #{{ event.player.number }} {{ event.player.name }}
                         </td>
-                        <td class="text-secondary px-4 py-3 text-sm whitespace-nowrap">{{ event.team.name }}</td>
+                        <td class="text-secondary px-4 py-3 text-sm whitespace-nowrap">
+                          {{ event.team.name }}
+                        </td>
                         <td class="px-4 py-3 text-right whitespace-nowrap">
                           <button
                             matIconButton
@@ -784,7 +871,9 @@ interface LocalMatchEvent {
       display: flex;
       flex-direction: column;
       gap: 8px;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
 
       &:hover {
         border-color: var(--mat-sys-primary);
@@ -1130,15 +1219,17 @@ export default class MatchControlPage implements OnInit, OnDestroy {
             backendEventId: e.id,
           };
         });
-        this.events.set(localEvents.sort((a, b) => {
-          // Sort by time (newest first for display)
-          const match = this.match();
-          if (!match) return 0;
-          const aEvent = backendEvents.find((e) => e.id === a.backendEventId);
-          const bEvent = backendEvents.find((e) => e.id === b.backendEventId);
-          if (!aEvent || !bEvent) return 0;
-          return bEvent.createdAt.getTime() - aEvent.createdAt.getTime();
-        }));
+        this.events.set(
+          localEvents.sort((a, b) => {
+            // Sort by time (newest first for display)
+            const match = this.match();
+            if (!match) return 0;
+            const aEvent = backendEvents.find((e) => e.id === a.backendEventId);
+            const bEvent = backendEvents.find((e) => e.id === b.backendEventId);
+            if (!aEvent || !bEvent) return 0;
+            return bEvent.createdAt.getTime() - aEvent.createdAt.getTime();
+          }),
+        );
       },
       error: (error) => {
         console.error('Error loading events', error);
@@ -1177,14 +1268,16 @@ export default class MatchControlPage implements OnInit, OnDestroy {
               backendEventId: e.id,
             };
           });
-          this.events.set(localEvents.sort((a, b) => {
-            const match = this.match();
-            if (!match) return 0;
-            const aEvent = backendEvents.find((e) => e.id === a.backendEventId);
-            const bEvent = backendEvents.find((e) => e.id === b.backendEventId);
-            if (!aEvent || !bEvent) return 0;
-            return bEvent.createdAt.getTime() - aEvent.createdAt.getTime();
-          }));
+          this.events.set(
+            localEvents.sort((a, b) => {
+              const match = this.match();
+              if (!match) return 0;
+              const aEvent = backendEvents.find((e) => e.id === a.backendEventId);
+              const bEvent = backendEvents.find((e) => e.id === b.backendEventId);
+              if (!aEvent || !bEvent) return 0;
+              return bEvent.createdAt.getTime() - aEvent.createdAt.getTime();
+            }),
+          );
         },
         error: (error) => {
           console.error('Error during event polling', error);
@@ -1469,7 +1562,9 @@ export default class MatchControlPage implements OnInit, OnDestroy {
           teamSignal.update((team) => ({
             ...team,
             players: team.players.map((p) =>
-              p.id === newPlayer.id ? { ...p, originalPlayerId: createdPlayer.id, name: createdPlayer.fullName } : p
+              p.id === newPlayer.id
+                ? { ...p, originalPlayerId: createdPlayer.id, name: createdPlayer.fullName }
+                : p,
             ),
           }));
           this.snackBar.open('Jugador agregado', 'Cerrar', { duration: 2000 });
@@ -1510,7 +1605,12 @@ export default class MatchControlPage implements OnInit, OnDestroy {
     }
   }
 
-  updatePlayer(teamId: 'home' | 'away', playerId: string, field: keyof LocalPlayer, value: string | number): void {
+  updatePlayer(
+    teamId: 'home' | 'away',
+    playerId: string,
+    field: keyof LocalPlayer,
+    value: string | number,
+  ): void {
     this.saveToHistory();
     const teamSignal = teamId === 'home' ? this.homeTeam : this.awayTeam;
     const player = teamSignal().players.find((p) => p.id === playerId);
@@ -1538,7 +1638,7 @@ export default class MatchControlPage implements OnInit, OnDestroy {
           teamSignal.update((team) => ({
             ...team,
             players: team.players.map((p) =>
-              p.id === playerId ? { ...p, name: updatedPlayer.fullName } : p
+              p.id === playerId ? { ...p, name: updatedPlayer.fullName } : p,
             ),
           }));
         },

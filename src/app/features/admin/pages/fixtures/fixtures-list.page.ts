@@ -11,7 +11,7 @@ import { FormsModule } from '@angular/forms';
 import { ChampionshipService } from '../../../../core/services/championship.service';
 import { MatchService } from '../../../../core/services/match.service';
 import { TeamService } from '../../../../core/services/team.service';
-import { AuthService } from '../../../../core/services/auth.service';
+import { AuthService } from '../../../../core/services/auth.service_v1';
 import { Championship } from '../../../../core/models/championship.model';
 import { Match } from '../../../../core/models/match.model';
 import { Team } from '../../../../core/models/team.model';

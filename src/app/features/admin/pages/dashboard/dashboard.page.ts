@@ -12,7 +12,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
-import { AuthService } from '../../../../core/services/auth.service';
+import { AuthService } from '../../../../core/services/auth.service_v1';
 import { ChampionshipService } from '../../../../core/services/championship.service';
 import { TeamService } from '../../../../core/services/team.service';
 import { MatchService } from '../../../../core/services/match.service';

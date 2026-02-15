@@ -14,7 +14,7 @@ import { forkJoin } from 'rxjs';
 import { PlayerService } from '../../../../core/services/player.service';
 import { TeamService } from '../../../../core/services/team.service';
 import { ChampionshipService } from '../../../../core/services/championship.service';
-import { AuthService } from '../../../../core/services/auth.service';
+import { AuthService } from '../../../../core/services/auth.service_v1';
 import { Player } from '../../../../core/models/player.model';
 import { Team } from '../../../../core/models/team.model';
 import { Championship } from '../../../../core/models/championship.model';

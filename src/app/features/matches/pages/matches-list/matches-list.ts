@@ -363,6 +363,7 @@ export default class MatchesList {
     const matchesByChampionship = new Map<string, DisplayMatch[]>();
 
     for (const match of matches) {
+      console.log('Matches en matchesList', match);
       const matchDate = this.formatDateToISO(match.scheduledDate);
       if (matchDate === selectedDateStr) {
         const homeTeam = teams.find((t) => t.id === match.homeTeamId);
@@ -509,6 +510,12 @@ export default class MatchesList {
   }
 
   private formatDateToISO(date: Date): string {
+    console.log('Error presente aqúi');
+    console.log('Date being formatted:', date);
+    if (!date) {
+      console.warn('Fecha vacía, devolviendo string vacío');
+      return '';
+    }
     return date.toISOString().split('T')[0];
   }
 

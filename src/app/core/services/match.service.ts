@@ -14,7 +14,7 @@ export class MatchService {
    * Get all matches for a championship
    */
   getMatches(championshipId: string): Observable<Match[]> {
-    return this.api.get<Match[]>('matches', { championshipId }).pipe(
+    return this.api.get<Match[]>('matches/all', { championshipId }).pipe(
       map((matches) => matches.map((m) => this.parseMatchDates(m))),
       catchError((error) => this.handleError('Error fetching matches', error)),
     );
@@ -28,7 +28,7 @@ export class MatchService {
     if (championshipId) {
       params.championshipId = championshipId;
     }
-    return this.api.get<Match[]>('matches', params).pipe(
+    return this.api.get<Match[]>('matches/all', params).pipe(
       map((matches) => matches.map((m) => this.parseMatchDates(m))),
       catchError((error) => this.handleError('Error fetching matches by date', error)),
     );
