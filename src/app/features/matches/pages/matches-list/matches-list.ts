@@ -362,12 +362,20 @@ export default class MatchesList {
     // Group matches by championship
     const matchesByChampionship = new Map<string, DisplayMatch[]>();
 
+    console.log('Maches:', matches);
+    console.log('Teams:', teams);
+    console.log('Championships:', championships);
     for (const match of matches) {
       console.log('Matches en matchesList', match);
       const matchDate = this.formatDateToISO(match.scheduledDate);
+      console.log('Match date:', matchDate, 'Selected date:', selectedDateStr);
       if (matchDate === selectedDateStr) {
+        console.log('Match coincide con la fecha seleccionada:', match);
         const homeTeam = teams.find((t) => t.id === match.homeTeamId);
         const awayTeam = teams.find((t) => t.id === match.awayTeamId);
+
+        console.log('Home team:', homeTeam);
+        console.log('Away team:', awayTeam);
 
         if (!homeTeam || !awayTeam) continue;
 

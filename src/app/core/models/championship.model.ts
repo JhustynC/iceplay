@@ -128,4 +128,3 @@ export function getDefaultChampionshipSettings(sport: Sport): ChampionshipSettin
       return baseSettings;
   }
 }
-
