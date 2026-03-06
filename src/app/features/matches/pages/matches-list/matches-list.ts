@@ -380,6 +380,8 @@ export default class MatchesList {
         if (!homeTeam || !awayTeam) continue;
 
         const championship = championships.find((c) => c.id === match.championshipId);
+
+        console.log('Championship:', championship);
         if (!championship) continue;
 
         const displayMatch: DisplayMatch = {
@@ -464,7 +466,12 @@ export default class MatchesList {
             forkJoin(matchObservables).subscribe({
               next: (matchesArrays) => {
                 const allMatches = matchesArrays.flat();
-                this.allMatches.set(allMatches);
+
+                // Eliminar duplicados por id
+                const uniqueMatchesMap = Array.from(
+                  new Map(allMatches.map((m) => [m.id, m])).values(),
+                );
+                this.allMatches.set(uniqueMatchesMap);
                 this.isLoading.set(false);
               },
               error: (error) => {
@@ -518,10 +525,10 @@ export default class MatchesList {
   }
 
   private formatDateToISO(date: Date): string {
-    console.log('Error presente aqúi');
-    console.log('Date being formatted:', date);
+    //console.log('Error presente aqúi');
+    //console.log('Date being formatted:', date);
     if (!date) {
-      console.warn('Fecha vacía, devolviendo string vacío');
+      //console.warn('Fecha vacía, devolviendo string vacío');
       return '';
     }
     return date.toISOString().split('T')[0];
