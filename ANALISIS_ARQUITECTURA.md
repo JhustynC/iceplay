@@ -439,6 +439,8 @@ Championship:
 Announcements: Global, pueden dirigirse a Organization o Championship
 ```
 
+Notas: lo equipos se podrían formar por campeonatos es decir le equipo existe para el campeonato y no es independiente, standigs se refiere a la fila no a toda una tabla.
+
 ### Diagrama de Relaciones Propuestas (Database)
 
 ```
@@ -621,6 +623,8 @@ importTeamsFromCsv(file: File, championshipId: string): Observable<CsvImportResu
 
 ---
 
+Notas: se debería poner un excel de ejemplo con cabeceras como guía para el usuario
+
 ### 5. **PlayerService**
 
 **Responsabilidades:**
@@ -673,7 +677,7 @@ getMatches(championshipId: string): Observable<Match[]>
 getMatchesByDate(date: string, championshipId?: string): Observable<Match[]>
 getMatchById(id: string): Observable<Match>
 getMatchesByOrganization(organizationId: string): Observable<Match[]>
-getLiveMatches(organizationId?: string): Observable<Match[]>
+getLiveMatches(organizationId?: string): Observable<Match[]> // puede que no se ocupe en esta versión
 createMatch(match: Partial<Match>): Observable<Match>
 updateMatch(id: string, match: UpdateMatchDto): Observable<Match>
 updateMatchScore(id: string, score: UpdateMatchScoreDto): Observable<Match>
@@ -707,7 +711,7 @@ updateMatchScore(id: string, score: UpdateMatchScoreDto): Observable<Match>
 
 ```typescript
 getMatchEvents(matchId: string): Observable<MatchEvent[]>
-getMatchEventsWithPolling(matchId: string, isLive: boolean): Observable<MatchEvent[]>
+getMatchEventsWithPolling(matchId: string, isLive: boolean): Observable<MatchEvent[]> // ??
 createEvent(event: CreateEventDto & {matchId: string; championshipId: string}): Observable<MatchEvent>
 updateEvent(id: string, event: UpdateEventDto): Observable<MatchEvent>
 deleteEvent(id: string): Observable<void>
@@ -816,6 +820,7 @@ Acciones:
 #### 3️⃣ Generador de Fixture
 
 ```
+
 Pantalla: /admin/fixtures/generate
 Servicios: ChampionshipService, TeamService, MatchService
 
@@ -828,7 +833,11 @@ Flujo:
 5. Mostrar resultados generados
 ```
 
+Nota: el fixture y la calendarización son dos funcionalidades aparte, revisar el algoritmo y lo desarrollado por Andrés
+
 #### 4️⃣ Control en Vivo de Partidos
+
+
 
 ```
 Pantalla: /admin/match-control/:matchId
