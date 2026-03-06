@@ -837,7 +837,7 @@ Nota: el fixture y la calendarización son dos funcionalidades aparte, revisar e
 
 #### 4️⃣ Control en Vivo de Partidos
 
-
+Nota: la implementación en tiempo real no se va a hacer
 
 ```
 Pantalla: /admin/match-control/:matchId
